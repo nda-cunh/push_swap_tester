@@ -21,3 +21,8 @@ il calculera donc la moyenne et la valeur max obtenue.
 Note:
 il doit y avoir `checker_linux` à coté de lui ainsi que l'executable `push_swap`.
 si checker_linux n'est pas trouvé celui-ci sera téléchargé de lui même.
+
+Sinon un visualizer existe ici ;)
+N'hesitez pas à regarder ;P
+
+https://gitlab.com/hydrasho/visualizer-push-swap
