@@ -1,119 +1,112 @@
 using Posix;
 
-int[] ft_get_random_tab(int size)
+void list_test()
 {
-    var tab = new int[size];
-    var n = 0;
+	/* TRUE = GOOD  */
+	/* FALSE = ERROR */
+
+	test({"5", "4", "3"}, true);
+	test({"5", "1", "0", "2"}, true);
+	test({"5 4A 3"}, false);
+	test({"5 2 3 4 8"}, true);
+	test({"42 -500 -2845 -21 54784 1541"}, true);
+	test({"42", "500", "-2845", "-21", " 54784", "1541"}, true);
+	test({"52 14 15"}, true);
+	test({"52"}, true);
+	test({"e1 2 3 4 5"}, false);
+	test({"1 2 4 3 5e"}, false);
+	test({"1 2 3 4 5e"}, false);
+	test({"+"}, false);
+	test({"1 2 3"}, true);
+	test({" 1 2 3"}, true);
+	test({"1 2 3 "}, true);
+	test({" 1 2 3 "}, true);
+	test({" 1   2               3 "}, true);
+	test({"1 2 3 4 5"}, true);
+	test({"5 4 3 2 1"}, true);
+	test({"5", "3", "2", "1"}, true);
+	test({" 5", "3  ", " 2", " 1"}, true);
+	test({" 5", "8"}, true);
+	test({"05 02"}, true);
+	test({"2147483647 -2147483648"}, true);
+	test({"0002147483647 -002147483648"}, true);
+	test({"05 08 0009 00010 2"}, true);
+	test({"05 5 005"}, false);
+	test({"-00", "00"}, false);
+	test({"052 02"}, true);
+	test({"-0", "0"}, false);
+	test({"0", "-0"}, false);
+	test({"-10", "-23"}, true);
+	test({"-0"}, true);
+	test({"4 2 3", "5"}, true);
+	test({"5", "4", "3"}, true);
+	test({"10 5 4 2 1 3 6 9"}, true);
+	test({"5-2"}, false);
+	test({"5+2"}, false);
+	test({"2-5"}, false);
+	test({"2+5"}, false);
+
+}
+
+void test(string[] arg, bool compare)
+{
+	var tab = tab_to_string(arg);
+	system(@"./push_swap $(tab) 1>tmp_1  2> tmp_2");
+	var FD_ERR = FileStream.open("tmp_2", "r");
+	var str = FD_ERR.read_line();
     
-    for (var i = 0; i != size; i++)
-    {
-        n = Random.int_range(int.MIN, int.MAX);
-        if (n in tab)
-            i--;
-        else
-            tab[i] = n;
-    }
-    return (tab);
+    system("chmod +x push_swap");
+	if (compare == false)
+	{
+		if (str == "Error")
+			print("\033[1;32mOK \033[0m");
+		else
+			print("\033[1;31mKO \033[0m");
+	}
+	else
+	{
+		system(@"cat tmp_1 | ./checker_linux $(tab) > tmp_3");
+		var FD_OUT = FileStream.open("tmp_3", "r");
+		str = FD_OUT.read_line();
+		if ("OK" in str)
+			print("\033[1;32mOK \033[0m");
+		else if ("KO" in str)
+			print("\033[1;31mKO \033[0m");
+		else
+			print("ERR");
+	}
+	system("rm -rf tmp_1 tmp_2 tmp_3");
 }
 
-string ft_tab_to_string(int []tab)
+string tab_to_string(string[] tab)
 {
-    var str = "";
-    foreach (var i in tab)
-        str += i.to_string() + " ";
-    return(str);
+	var str = "";
+	foreach (var i in tab)
+		str += i + " ";
+	return (str);
 }
 
-int ft_count_line()
+int main(string []args)
 {
-    var fd = FileStream.open ("my_file", "r");
-    var i = 0;
-
-    while (fd.read_line() != null)
-        i++;
-    return (i);
-}
-
-void main(string []args)
-{
-    var fd = FileStream.open("./checker_linux", "r");
-    if(fd == null)
+	var FD_PUSH = FileStream.open("push_swap", "r");
+	
+	if (FD_PUSH == null)
+	{
+		print("push_swap n'existe pas (ou les permissions ne sont pas accordées)");
+		return (-1);
+	}
+	var FD_CHECKER = FileStream.open("./checker_linux", "r");
+	
+	if (FD_CHECKER == null)
     {
         system("wget -c https://projects.intra.42.fr/uploads/document/document/9218/checker_linux");
         system("chmod +x checker_linux");
     }
-    system("chmod +x push_swap");
-    var puissance = args[1] != null ? int.parse(args[1]) : 10;
-    var foix = args.length > 2 ? int.parse(args[2]) : 10;
-    var nbr = 0;
-    var max = 0;
-    var moy = 0.0;
 
-    var i = 0;
-    while(i != foix)
-    {
-        var tab = ft_get_random_tab(puissance);
-        var str = ft_tab_to_string(tab);
-        system(@"./push_swap \"$(str)\" > my_file");
-        system(@"cat ./my_file | ./checker_linux $(str)");
-        nbr = ft_count_line();
-        if(nbr > max)
-            max = nbr;
-        moy += nbr;
-        if (puissance <= 100)
-		{
-			if (nbr < 700)
-				print(@"Nombre de coups : \033[1m$(nbr)\033[0m\n");
-			else if (nbr < 900)
-				print(@"Nombre de coups : \033[1;34m$(nbr)\033[0m\n");
-			else if (nbr < 1100)
-				print(@"Nombre de coups : \033[1;32m$(nbr)\033[0m\n");
-			else if (nbr < 1500)
-				print(@"Nombre de coups : \033[1;33$(nbr)\033[0m\n");
-			else
-				print(@"Nombre de coups : \033[1;31m$(nbr)\033[0m\n");
-		}
-		else if (puissance <= 500)
-		{
-			if (nbr < 5500)
-				print(@"Nombre de coups : \033[1m$(nbr)\033[0m\n");
-			else if (nbr < 7000)
-				print(@"Nombre de coups : \033[1;34m$(nbr)\033[0m\n");
-			else if (nbr < 8500)
-				print(@"Nombre de coups : \033[1;32m$(nbr)\033[0m\n");
-			else if (nbr < 11500)
-				print(@"Nombre de coups : \033[1;33$(nbr)\033[0m\n");
-			else
-				print(@"Nombre de coups : \033[1;31m$(nbr)\033[0m\n");
-		}
-        i++;
-    }
-    print(@"MAX :		\033[1;31;6m$(max)\n\033[0m");
-	if (puissance <= 100)
-	{
-		if (nbr < 700)
-    		print(@"moyenne:	\033[1m$(moy/i)\033[0m\n");
-		else if (nbr < 900)
-    		print(@"moyenne:	\033[1;34m$(moy/i)\033[0m\n");
-		else if (nbr < 1100)
-    		print(@"moyenne:	\033[1;32m$(moy/i)\033[0m\n");
-		else if (nbr < 1500)
-    		print(@"moyenne:	\033[1;33m$(moy/i)\033[0m\n");
-		else
-    		print(@"moyenne:	\033[1;31m$(moy/i)\033[0m\n");
-	}
-	else if (puissance <= 500)
-	{
-		if (nbr < 5500)
-    		print(@"moyenne:	\033[1m$(moy/i)\033[0m\n");
-		else if (nbr < 7000)
-    		print(@"moyenne:	\033[1;34m$(moy/i)\033[0m\n");
-		else if (nbr < 8500)
-    		print(@"moyenne:	\033[1;32m$(moy/i)\033[0m\n");
-		else if (nbr < 11500)
-    		print(@"moyenne:	\033[1;33m$(moy/i)\033[0m\n");
-		else
-    		print(@"moyenne:	\033[1;31m$(moy/i)\033[0m\n");
-	}
-	system("rm my_file");
+
+	if (args.length == 1)
+		list_test();
+	else
+		calc_moy(args);
+	return (0);
 }
