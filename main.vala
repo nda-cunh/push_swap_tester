@@ -92,7 +92,7 @@ int main(string []args)
 	
 	if (FD_PUSH == null)
 	{
-		print("push_swap n'existe pas (ou les permissions ne sont pas accordées)");
+		print("push_swap n'existe pas");
 		return (-1);
 	}
 	var FD_CHECKER = FileStream.open("./checker_linux", "r");
@@ -102,8 +102,6 @@ int main(string []args)
         system("wget -c https://projects.intra.42.fr/uploads/document/document/9218/checker_linux");
         system("chmod +x checker_linux");
     }
-
-
 	if (args.length == 1)
 		list_test();
 	else
