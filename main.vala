@@ -16,7 +16,7 @@ void list_test()
 	test({"e1 2 3 4 5"}, false);
 	test({"1 2 4 3 5e"}, false);
 	test({"1 2 3 4 5e"}, false);
-	test({"+"}, false);
+	test({"+", "52"}, false);
 	test({"1 2 3"}, true);
 	test({" 1 2 3"}, true);
 	test({"1 2 3 "}, true);
@@ -45,6 +45,8 @@ void list_test()
 	test({"5+2"}, false);
 	test({"2-5"}, false);
 	test({"2+5"}, false);
+	test({"2", "", "3"}, false);
+	test({"3", "", "2"}, false);
 
 }
 
@@ -54,14 +56,14 @@ void test(string[] arg, bool compare)
 	system(@"./push_swap $(tab) 1>tmp_1  2> tmp_2");
 	var FD_ERR = FileStream.open("tmp_2", "r");
 	var str = FD_ERR.read_line();
-    
-    system("chmod +x push_swap");
+   
+
 	if (compare == false)
 	{
 		if (str == "Error")
 			print("\033[1;32mOK \033[0m");
 		else
-			print("\033[1;31mKO \033[0m");
+			print("\033[1;31mKO [ %s] \033[0m", tab);
 	}
 	else
 	{
@@ -71,7 +73,7 @@ void test(string[] arg, bool compare)
 		if ("OK" in str)
 			print("\033[1;32mOK \033[0m");
 		else if ("KO" in str)
-			print("\033[1;31mKO \033[0m");
+			print("\033[1;31mKO [ %s] \033[0m", tab);
 		else
 			print("ERR");
 	}
@@ -82,7 +84,7 @@ string tab_to_string(string[] tab)
 {
 	var str = "";
 	foreach (var i in tab)
-		str += i + " ";
+		str += @"\"$(i)\" ";
 	return (str);
 }
 
@@ -95,12 +97,13 @@ int main(string []args)
 		print("push_swap n'existe pas");
 		return (-1);
 	}
+	chmod("push_swap", S_IRWXU);
 	var FD_CHECKER = FileStream.open("./checker_linux", "r");
 	
 	if (FD_CHECKER == null)
     {
         system("wget -c https://projects.intra.42.fr/uploads/document/document/9218/checker_linux");
-        system("chmod +x checker_linux");
+		chmod("checker_linux", S_IRWXU);
     }
 	if (args.length == 1)
 		list_test();
