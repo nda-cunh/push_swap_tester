@@ -25,10 +25,10 @@ make all # make opti for compilation with -X -O3
 # Screenshots
 
 ### Launching with no args
-<img src="withoutarg.png">
+<img src="img/withoutarg.png">
 
 ### Lauching with 2 args
-<img src="arg2.png">
+<img src="img/arg2.png">
 
 
 # Note
