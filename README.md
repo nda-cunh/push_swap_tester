@@ -1,28 +1,41 @@
-# Installation:
+# Installation
 
-```valac main.vala moy.vala --pkg=posix -o push_swap_tester```
+### 1. Download the repo
+```bash
+git clone https://gitlab.com/hydrasho/push_swap-testeur-max.git 
+```
 
-pour ajouter les optimisations de GCC (optionnelle):
-``( -X -O3 )``
+### 2. got to the repo cloned and compile the program
 
-# Utilisation:
+```bash
+valac main.vala moy.vala --pkg=posix -o push_swap_tester
+```
 
-sans argument il testera les erreures des entrées
-```./push_swap_tester``` 
+Facultative optimisation GCC option ` -X -O3 `
 
+# Utilisation
+
+`
+ ./push_swap_test [ nb_element ] [ nb_iteration ]
+ `
+
+**options**\
+&nbsp; ***nb_element***  &nbsp;&nbsp;&nbsp;&nbsp; The number of element to sort\
+&nbsp; ***nb_iteration*** &nbsp;&nbsp;&nbsp; The number of times you want to test your push_swap (default 10)\
+&nbsp;&nbsp;&nbsp;  ***< none >*** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Testing all error cases
+
+# Screenshots
+
+### Launching with no args
 <img src="withoutarg.png">
 
-Sinon il prend 1 ou 2 parametres dont la puissance et le nombres de fois (10 par défauts)
-il calculera donc la moyenne et la valeur max obtenue.
-
+### Lauching with 2 args
 <img src="arg2.png">
 
 
-Note:
-il doit y avoir `checker_linux` à coté de lui ainsi que l'executable `push_swap`.
-si checker_linux n'est pas trouvé celui-ci sera téléchargé de lui même.
+# Note
 
-Sinon un visualizer existe ici ;)
-N'hesitez pas à regarder ;P
+Your program `push_swap` must be in the repo when lauching.\
+Same for `checker_linux` (otherwise the checker will be downloaded).
 
-https://gitlab.com/hydrasho/visualizer-push-swap
+I have also done a push_swap visualizer here ( [Have a look 😜](https://gitlab.com/hydrasho/visualizer-push-swap) )
