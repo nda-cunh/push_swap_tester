@@ -10,7 +10,7 @@ opti	:
 		@valac main.vala moy.vala --pkg=posix -X -O3 -o ${NAME}
 		@echo -e "\033[92;1;5m[push_swap_tester]\033[0m Correctly created with optimisation"
 
-run		:
+run		: ${NAME}
 		@./${NAME}
 
 clean	:  

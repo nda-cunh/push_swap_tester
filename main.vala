@@ -102,8 +102,9 @@ int main(string []args)
 	
 	if (FD_CHECKER == null)
     {
-        system("wget -c https://projects.intra.42.fr/uploads/document/document/9218/checker_linux");
+        system("wget -c https://projects.intra.42.fr/uploads/document/document/9218/checker_linux -q --show-progress");
 		chmod("checker_linux", S_IRWXU);
+		print("\n");
     }
 	if (args.length == 1)
 		list_test();
