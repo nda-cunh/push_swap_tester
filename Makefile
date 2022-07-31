@@ -14,5 +14,5 @@ run:
     ./push_swap_tester
 
 clean:  
-    @rm -f push_swap_tester                                                                                                                                                  
+    @rm -f push_swap_tester
     @echo -e "\033[93;1;5m[push_swap_tester]\033[0m Correctly deleted"
