@@ -8,10 +8,8 @@ git clone https://gitlab.com/hydrasho/push_swap-testeur-max.git
 ### 2. got to the repo cloned and compile the program
 
 ```bash
-valac main.vala moy.vala --pkg=posix -o push_swap_tester
+make all # make opti for compilation with -X -O3
 ```
-
-Facultative optimisation GCC option ` -X -O3 `
 
 # Utilisation
 
