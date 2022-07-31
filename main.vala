@@ -94,7 +94,7 @@ int main(string []args)
 	
 	if (FD_PUSH == null)
 	{
-		print("push_swap n'existe pas");
+		print("\033[96;1m [INFO] \033[0m push_swap not found \n");
 		return (-1);
 	}
 	chmod("push_swap", S_IRWXU);
