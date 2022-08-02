@@ -17,6 +17,10 @@ make all # make opti for compilation with -X -O3
  ./push_swap_test [ nb_element ] [ nb_iteration ]
  `
 
+ ./push_swap_tester true 			pour voir les non erreures
+ ./push_swap_tester false			pour voir uniquent les erreures.
+
+
 **options**\
 &nbsp; ***nb_element***  &nbsp;&nbsp;&nbsp;&nbsp; The number of element to sort\
 &nbsp; ***nb_iteration*** &nbsp;&nbsp;&nbsp; The number of times you want to test your push_swap (default 10)\

@@ -1,5 +1,9 @@
 using Posix;
 
+enum ONLY{
+	ALL, TRUE, FALSE
+}
+ONLY g_only = ALL;
 void list_test()
 {
 	/* TRUE = GOOD  */
@@ -60,6 +64,8 @@ void test(string[] arg, bool compare)
 
 	if (compare == false)
 	{
+		if (g_only == TRUE)
+			return ;
 		if (str == "Error")
 			print("\033[1;32mOK \033[0m");
 		else
@@ -67,6 +73,8 @@ void test(string[] arg, bool compare)
 	}
 	else
 	{
+		if (g_only == FALSE)
+			return ;
 		system(@"cat tmp_1 | ./checker_linux $(tab) > tmp_3");
 		var FD_OUT = FileStream.open("tmp_3", "r");
 		str = FD_OUT.read_line();
@@ -106,6 +114,18 @@ int main(string []args)
 		chmod("checker_linux", S_IRWXU);
 		print("\n");
     }
+	if (args[1] == "true"){
+		g_only = TRUE;
+		list_test();
+		return (0);
+	}
+	if (args[1] == "false"){
+		g_only = FALSE;
+		list_test();
+		return (0);
+	}
+	else
+		g_only = ALL;
 	if (args.length == 1)
 		list_test();
 	else
