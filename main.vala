@@ -81,15 +81,15 @@ void test(string[] arg, bool compare)
 	{
 		if (g_only == FALSE)
 			return ;
-		system(@"cat tmp_1 | ./checker_linux $(tab) > tmp_3");
+		system(@"cat tmp_1 | ./checker_linux 2> /dev/null $(tab) > tmp_3");
 		var FD_OUT = FileStream.open("tmp_3", "r");
 		str = FD_OUT.read_line();
-		if ("OK" in str)
+		if (str != null && "OK" in str)
 			print("\033[1;32mOK \033[0m");
-		else if ("KO" in str)
+		else if (str != null && "KO" in str)
 			print("\033[1;31mKO [ %s] \033[0m", tab);
 		else
-			print("ERR");
+			print("\033[1;31m ERROR [ %s] \033[0m", tab);
 	}
 	system("rm -rf tmp_1 tmp_2 tmp_3");
 }
