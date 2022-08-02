@@ -51,6 +51,12 @@ void list_test()
 	test({"2+5"}, false);
 	test({"2", "", "3"}, false);
 	test({"3", "", "2"}, false);
+	test({"   ", " ", "   "}, false);
+	test({"   ", "-", "   "}, false);
+	test({"   ", "-a", "   "}, false);
+	test({"   -a   "}, false);
+	test({"++52"}, false);
+	test({"+-52"}, false);
 
 }
 
