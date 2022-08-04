@@ -86,28 +86,28 @@ void calc_moy(string []args)
 	if (puissance <= 100)
 	{
 		if (moy < 700)
-    		print(@"moyenne:	\033[1m$(moy/i)\033[0m\n");
+    		print(@"moyenne:	\033[1m$(moy)\033[0m\n");
 		else if (moy < 900)
-    		print(@"moyenne:	\033[1;34m$(moy/i)\033[0m\n");
+    		print(@"moyenne:	\033[1;34m$(moy)\033[0m\n");
 		else if (moy < 1100)
-    		print(@"moyenne:	\033[1;32m$(moy/i)\033[0m\n");
+    		print(@"moyenne:	\033[1;32m$(moy)\033[0m\n");
 		else if (moy < 1500)
-    		print(@"moyenne:	\033[1;33m$(moy/i)\033[0m\n");
+    		print(@"moyenne:	\033[1;33m$(moy)\033[0m\n");
 		else
-    		print(@"moyenne:	\033[1;31m$(moy/i)\033[0m\n");
+    		print(@"moyenne:	\033[1;31m$(moy)\033[0m\n");
 	}
 	else if (puissance <= 500)
 	{
 		if (moy < 5500)
-    		print(@"moyenne:	\033[1m$(moy/i)\033[0m\n");
+    		print(@"moyenne:	\033[1m$(moy)\033[0m\n");
 		else if (moy < 7000)
-    		print(@"moyenne:	\033[1;34m$(moy/i)\033[0m\n");
+    		print(@"moyenne:	\033[1;34m$(moy)\033[0m\n");
 		else if (moy < 8500)
-    		print(@"moyenne:	\033[1;32m$(moy/i)\033[0m\n");
+    		print(@"moyenne:	\033[1;32m$(moy)\033[0m\n");
 		else if (moy < 11500)
-    		print(@"moyenne:	\033[1;33m$(moy/i)\033[0m\n");
+    		print(@"moyenne:	\033[1;33m$(moy)\033[0m\n");
 		else
-    		print(@"moyenne:	\033[1;31m$(moy/i)\033[0m\n");
+    		print(@"moyenne:	\033[1;31m$(moy)\033[0m\n");
 	}
 	system("rm my_file");
 }
