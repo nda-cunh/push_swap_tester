@@ -47,7 +47,7 @@ void calc_moy(string []args)
     {
         var tab = ft_get_random_tab(puissance);
         var str = ft_tab_to_string(tab);
-        system(@"./push_swap \"$(str)\" > my_file");
+        system(@"$(push_swap_emp) \"$(str)\" > my_file");
         system(@"cat ./my_file | ./checker_linux $(str)");
         nbr = ft_count_line();
         if(nbr > max)
