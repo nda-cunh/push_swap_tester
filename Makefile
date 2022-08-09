@@ -1,4 +1,4 @@
-NAME    =   push_swap_tester
+NAME    =   tester_push_swap
 
 all:
 	valac main.vala moy.vala --pkg=posix -o ${NAME} 
