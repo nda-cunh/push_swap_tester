@@ -14,11 +14,11 @@ make all # make opti for compilation with -X -O3
 # Utilisation
 
 `
- ./push_swap_test [ nb_element ] [ nb_iteration ]
+ ./tester_push_swap [ nb_element ] [ nb_iteration ]
  `
 
- ./push_swap_tester true 			pour voir les non erreures
- ./push_swap_tester false			pour voir uniquent les erreures.
+ ./tester_push_swap true 			pour voir les non erreures
+ ./tester_push_swap false			pour voir uniquent les erreures.
 
 
 **options**\
@@ -37,7 +37,7 @@ make all # make opti for compilation with -X -O3
 
 # Note
 
-Your program `push_swap` must be in the repo when lauching.\
+Your program `push_swap` or `../push_swap` must be in the repo when lauching.\
 Same for `checker_linux` (otherwise the checker will be downloaded).
 
 I have also done a push_swap visualizer here ( [Have a look 😜](https://gitlab.com/hydrasho/visualizer-push-swap) )
