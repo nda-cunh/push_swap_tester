@@ -63,7 +63,7 @@ void list_test()
 void test(string[] arg, bool compare)
 {
 	var tab = tab_to_string(arg);
-	system(@"./push_swap $(tab) 1>tmp_1  2> tmp_2");
+	system(@"$(push_swap_emp) $(tab) 1>tmp_1  2> tmp_2");
 	var FD_ERR = FileStream.open("tmp_2", "r");
 	var str = FD_ERR.read_line();
    
@@ -101,6 +101,7 @@ string tab_to_string(string[] tab)
 		str += @"\"$(i)\" ";
 	return (str);
 }
+public string push_swap_emp;
 
 int main(string []args)
 {
@@ -109,9 +110,25 @@ int main(string []args)
 	if (FD_PUSH == null)
 	{
 		print("\033[96;1m [INFO] \033[0m push_swap not found \n");
-		return (-1);
+		FD_PUSH = FileStream.open("../push_swap", "r");
+		print("\033[96;1m [INFO] \033[0m recherche de push_swap  ../push_swap\n");
+		if (FD_PUSH == null)
+		{
+			print("\033[96;1m [INFO] \033[0m ../push_swap not found \n");
+			return(-1);
+		}
+		else
+		{
+			push_swap_emp = "../push_swap";
+			chmod("../push_swap", S_IRWXU);
+		}
 	}
-	chmod("push_swap", S_IRWXU);
+
+	if (push_swap_emp == null)
+	{
+		push_swap_emp = "./push_swap";
+		chmod("push_swap", S_IRWXU);
+	}
 	var FD_CHECKER = FileStream.open("./checker_linux", "r");
 	
 	if (FD_CHECKER == null)
