@@ -57,6 +57,10 @@ void list_test()
 	test({"   -a   "}, false);
 	test({"++52"}, false);
 	test({"+-52"}, false);
+	test({"2147483648 5"}, false);
+	test({"-2147483649 8"}, false);
+	test({"214748364842 5"}, false);
+	test({"-21474836494 8"}, false);
 
 }
 
