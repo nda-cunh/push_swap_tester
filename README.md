@@ -1,3 +1,12 @@
+Testeur Push_swap en vala pour 42 Angouleme,
+
+il permet de:
+- Tester les cas d'erreures du push_swap.
+- Faire une moyenne globale du nombres de vos coups.
+- Verifier vos leaks de mémoire sur votre programme.
+
+Vous pouvez aussi installer le visualizer de Stack A et B en 2D en bas de page.
+
 # Installation
 
 ### 1. Download the repo
@@ -8,32 +17,35 @@ git clone https://gitlab.com/hydrasho/push_swap-testeur-max.git
 ### 2. got to the repo cloned and compile the program
 
 ```bash
-make all # make opti for compilation with -X -O3
+make all
 ```
 
 # Utilisation
 
+### MODE erreur de parse
+<img src="img/withoutarg.png">
 `
  ./tester_push_swap [ nb_element ] [ nb_iteration ]
  `
 
- ./tester_push_swap true 			pour voir les non erreures
- ./tester_push_swap false			pour voir uniquent les erreures.
+ ./tester_push_swap true 			pour voir uniquement les erreures renvoyant une bonne valeur
+ ./tester_push_swap false			pour voir uniquement les erreures renvoyant une mauvaise valeur.
 
+
+### MODE Moyenne/Maximum de coups
+
+<img src="img/arg2.png">
 
 **options**\
 &nbsp; ***nb_element***  &nbsp;&nbsp;&nbsp;&nbsp; The number of element to sort\
 &nbsp; ***nb_iteration*** &nbsp;&nbsp;&nbsp; The number of times you want to test your push_swap (default 10)\
 &nbsp;&nbsp;&nbsp;  ***< none >*** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Testing all error cases
 
-# Screenshots
+### MODE leak
 
-### Launching with no args
-<img src="img/withoutarg.png">
+`./tester_push_swap leak` ou `./tester_push_swap valgrind`
 
-### Lauching with 2 args
-<img src="img/arg2.png">
-
+<img src="img/leak.png">
 
 # Note
 
