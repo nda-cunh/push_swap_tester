@@ -19,7 +19,6 @@ void list_test()
 	test({"42 -500 -2845 -21 54784 1541"}, true);
 	test({"42", "500", "-2845", "-21", " 54784", "1541"}, true);
 	test({"52 14 15"}, true);
-	test({"52"}, true);
 	test({"e1 2 3 4 5"}, false);
 	test({"1 2 4 3 5e"}, false);
 	test({"1 2 3 4 5e"}, false);
@@ -65,6 +64,7 @@ void list_test()
 	test({"9 214748364842 5"}, false);
 	test({"9 -21474836494 8"}, false);
 	test({"8 -214748364945465565656"}, false);
+	test({"25 514748364945465565656"}, false);
 
 	Posix.system("rm -rf tmp_1 tmp_2 tmp_3 errfile");
 }
@@ -110,18 +110,6 @@ void test(string[] arg, bool compare)
 			print(@"$(GREEN)[MOK]: $x malloc, $y free$(NONE)\n");
 		else
 			print(@"$(RED)[MKO]: $x malloc , $y free { $(tab)}$(NONE)\n");
-
-
-		/* Posix.system(@"valgrind $(push_swap_emp) $(tab) 1> /dev/null 2> tmp_2"); */
-		/* Posix.system("cat tmp_2 | grep \"total heap usage:\" > tmp_1"); */
-		/* var valgrind = FileStream.open("tmp_1", "r"); */
-		/* var t = valgrind.read_line().split(" "); */
-		/* var x = int.parse(t[6]); */
-		/* var y = int.parse(t[8]); */
-		/* if(x == y) */
-		/* 	print(@"$(GREEN)[MOK]: $x malloc, $y free$(NONE)\n"); */
-		/* else */
-		/* 	print(@"$(RED)[MKO]: $x malloc , $y free { $(tab)}$(NONE)\n"); */
 		return ;
 	}
 	Posix.system(@"$(push_swap_emp) $(tab) 1>tmp_1  2> tmp_2");
