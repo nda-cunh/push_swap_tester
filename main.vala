@@ -1,5 +1,19 @@
 using Posix;
 
+string ft_getline(int fd)
+{
+	var res = "";
+	char b = '0';
+
+	while (read(fd, &b, 1) > 0)
+	{
+		res += @"$b";
+		if(b == '\n')
+			return (res);
+	}
+	return (res);
+}
+
 public string push_swap_emp;
 
 enum ONLY{
@@ -66,7 +80,7 @@ void list_test()
 	test({"8 -214748364945465565656"}, false);
 	test({"25 514748364945465565656"}, false);
 
-	Posix.system("rm -rf tmp_1 tmp_2 tmp_3 errfile");
+	Posix.system("rm -rf tmp_1 tmp_2 tmp_3");
 }
 
 void test(string[] arg, bool compare)
@@ -79,37 +93,41 @@ void test(string[] arg, bool compare)
 	if (g_only == MEMORY_LEAK)
 	{
 		string []av = { "valgrind", @"$(push_swap_emp)"};
-		foreach(var i in arg)
-			av += @"$i";
-
-		var fderr = open("errfile", O_WRONLY | O_CREAT, S_IRWXU);
+		string []split_line = null;
+		string line = null;
+		string x = null;
+		string y = null;
+		int fds[2];
+		
+		pipe(fds);
 		var pid = fork();
 		if(pid == 0)
 		{
+			foreach(var i in arg)
+				av += @"$i";
+			close(fds[0]);
 			close(1);
-			dup2(fderr, 2);
+			dup2(fds[1], 2);
 			execvp("/bin/valgrind", av);
+			close(fds[1]);
 		}
 		waitpid(pid, null, 0);
-		var flux_err = FileStream.open("errfile", "r");
-		
-		var line = flux_err.read_line();
-		string []split_line = {};
-		while (!flux_err.eof())
-		{
-			line = flux_err.read_line();
+		close(fds[1]);
+		do{
+			line = ft_getline(fds[0]);
 			if (line != null && "total" in line)
 			{
-				 split_line = line.split(" ");
+				split_line = line.split(" ");
 				break ;
 			}
-		}
-		var x = split_line[6];
-		var y = split_line[8];
+		}while (line != null);
+		x = split_line[6];
+		y = split_line[8];
 		if(x == y)
-			print(@"$(GREEN)[MOK]: $x malloc, $y free$(NONE)\n");
+			printf(@"\033[1;32m[MOK]:$(GREEN) $x malloc, $y free$(NONE)\n");
 		else
-			print(@"$(RED)[MKO]: $x malloc , $y free { $(tab)}$(NONE)\n");
+			printf(@"$(RED)[MKO]: $x malloc , $y free { $(tab)}$(NONE)\n");
+		close(fds[0]);
 		return ;
 	}
 	Posix.system(@"$(push_swap_emp) $(tab) 1>tmp_1  2> tmp_2");
@@ -165,21 +183,21 @@ int main(string []args)
 		else
 		{
 			push_swap_emp = "../push_swap";
-			Posix.chmod("../push_swap", Posix.S_IRWXU);
+			Posix.chmod("../push_swap", S_IRWXU);
 		}
 	}
 
 	if (push_swap_emp == null)
 	{
 		push_swap_emp = "./push_swap";
-		Posix.chmod("push_swap", Posix.S_IRWXU);
+		Posix.chmod("push_swap", S_IRWXU);
 	}
 	var FD_CHECKER = FileStream.open("./checker_linux", "r");
 
 	if (FD_CHECKER == null)
 	{
 		Posix.system("wget -c https://projects.intra.42.fr/uploads/document/document/9218/checker_linux -q --show-progress");
-		Posix.chmod("checker_linux", Posix.S_IRWXU);
+		Posix.chmod("checker_linux", S_IRWXU);
 		printf("\n");
 	}
 	if (args[1] == "help" || args[1] == "-h"){
