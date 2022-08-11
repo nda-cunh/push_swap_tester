@@ -1,7 +1,9 @@
 using Posix;
 
+public string push_swap_emp;
+
 enum ONLY{
-	ALL, TRUE, FALSE
+	ALL, TRUE, FALSE, MEMORY_LEAK
 }
 ONLY g_only = ALL;
 void list_test()
@@ -9,6 +11,7 @@ void list_test()
 	/* TRUE = GOOD  */
 	/* FALSE = ERROR */
 
+	test({"52"}, true);
 	test({"5", "4", "3"}, true);
 	test({"5", "1", "0", "2"}, true);
 	test({"5 4A 3"}, false);
@@ -63,85 +66,145 @@ void list_test()
 	test({"9 -21474836494 8"}, false);
 	test({"8 -214748364945465565656"}, false);
 
+	Posix.system("rm -rf tmp_1 tmp_2 tmp_3 errfile");
 }
 
 void test(string[] arg, bool compare)
 {
 	var tab = tab_to_string(arg);
-	system(@"$(push_swap_emp) $(tab) 1>tmp_1  2> tmp_2");
-	var FD_ERR = FileStream.open("tmp_2", "r");
-	var str = FD_ERR.read_line();
-   
+	FileStream FD_ERR;
+	FileStream FD_OUT;
+	string str;
 
+	if (g_only == MEMORY_LEAK)
+	{
+		string []av = { "valgrind", @"$(push_swap_emp)"};
+		foreach(var i in arg)
+			av += @"$i";
+
+		var fderr = open("errfile", O_WRONLY | O_CREAT, S_IRWXU);
+		var pid = fork();
+		if(pid == 0)
+		{
+			close(1);
+			dup2(fderr, 2);
+			execvp("/bin/valgrind", av);
+		}
+		waitpid(pid, null, 0);
+		var flux_err = FileStream.open("errfile", "r");
+		
+		var line = flux_err.read_line();
+		string []split_line = {};
+		while (!flux_err.eof())
+		{
+			line = flux_err.read_line();
+			if (line != null && "total" in line)
+			{
+				 split_line = line.split(" ");
+				break ;
+			}
+		}
+		var x = split_line[6];
+		var y = split_line[8];
+		if(x == y)
+			print(@"$(GREEN)[MOK]: $x malloc, $y free$(NONE)\n");
+		else
+			print(@"$(RED)[MKO]: $x malloc , $y free { $(tab)}$(NONE)\n");
+
+
+		/* Posix.system(@"valgrind $(push_swap_emp) $(tab) 1> /dev/null 2> tmp_2"); */
+		/* Posix.system("cat tmp_2 | grep \"total heap usage:\" > tmp_1"); */
+		/* var valgrind = FileStream.open("tmp_1", "r"); */
+		/* var t = valgrind.read_line().split(" "); */
+		/* var x = int.parse(t[6]); */
+		/* var y = int.parse(t[8]); */
+		/* if(x == y) */
+		/* 	print(@"$(GREEN)[MOK]: $x malloc, $y free$(NONE)\n"); */
+		/* else */
+		/* 	print(@"$(RED)[MKO]: $x malloc , $y free { $(tab)}$(NONE)\n"); */
+		return ;
+	}
+	Posix.system(@"$(push_swap_emp) $(tab) 1>tmp_1  2> tmp_2");
+	FD_ERR = FileStream.open("tmp_2", "r");
+	str = FD_ERR.read_line();
 	if (compare == false)
 	{
 		if (g_only == TRUE)
 			return ;
 		if (str == "Error")
-			print("\033[1;32mOK \033[0m");
+			printf("\033[1;32mOK \033[0m");
 		else
-			print("\033[1;31mKO [ %s] \033[0m", tab);
+			printf("\033[1;31mKO [ %s] \033[0m", tab);
 	}
 	else
 	{
 		if (g_only == FALSE)
 			return ;
-		system(@"cat tmp_1 | ./checker_linux 2> /dev/null $(tab) > tmp_3");
-		var FD_OUT = FileStream.open("tmp_3", "r");
+		Posix.system(@"cat tmp_1 | ./checker_linux 2> /dev/null $(tab) > tmp_3");
+		FD_OUT = FileStream.open("tmp_3", "r");
 		str = FD_OUT.read_line();
 		if (str != null && "OK" in str)
-			print("\033[1;32mOK \033[0m");
+			printf("\033[1;32mOK \033[0m");
 		else if (str != null && "KO" in str)
-			print("\033[1;31mKO [ %s] \033[0m", tab);
+			printf("\033[1;31mKO [ %s] \033[0m", tab);
 		else
-			print("\033[1;31m ERROR [ %s] \033[0m", tab);
+			printf("\033[1;31m ERROR [ %s] \033[0m", tab);
 	}
-	system("rm -rf tmp_1 tmp_2 tmp_3");
 }
 
 string tab_to_string(string[] tab)
 {
 	var str = "";
 	foreach (var i in tab)
-		str += @"\"$(i)\" ";
+		str += @"\"$i\" ";
 	return (str);
 }
-public string push_swap_emp;
 
 int main(string []args)
 {
 	var FD_PUSH = FileStream.open("push_swap", "r");
-	
+
 	if (FD_PUSH == null)
 	{
-		print("\033[96;1m [INFO] \033[0m push_swap not found \n");
+		printf("\033[96;1m [INFO] \033[0m push_swap not found \n");
 		FD_PUSH = FileStream.open("../push_swap", "r");
-		print("\033[96;1m [INFO] \033[0m recherche de push_swap  ../push_swap\n");
+		printf("\033[96;1m [INFO] \033[0m recherche de push_swap  ../push_swap\n");
 		if (FD_PUSH == null)
 		{
-			print("\033[96;1m [INFO] \033[0m ../push_swap not found \n");
+			printf("\033[96;1m [INFO] \033[0m ../push_swap not found \n");
 			return(-1);
 		}
 		else
 		{
 			push_swap_emp = "../push_swap";
-			chmod("../push_swap", S_IRWXU);
+			Posix.chmod("../push_swap", Posix.S_IRWXU);
 		}
 	}
 
 	if (push_swap_emp == null)
 	{
 		push_swap_emp = "./push_swap";
-		chmod("push_swap", S_IRWXU);
+		Posix.chmod("push_swap", Posix.S_IRWXU);
 	}
 	var FD_CHECKER = FileStream.open("./checker_linux", "r");
-	
+
 	if (FD_CHECKER == null)
-    {
-        system("wget -c https://projects.intra.42.fr/uploads/document/document/9218/checker_linux -q --show-progress");
-		chmod("checker_linux", S_IRWXU);
-		print("\n");
-    }
+	{
+		Posix.system("wget -c https://projects.intra.42.fr/uploads/document/document/9218/checker_linux -q --show-progress");
+		Posix.chmod("checker_linux", Posix.S_IRWXU);
+		printf("\n");
+	}
+	if (args[1] == "help" || args[1] == "-h"){
+		printf("\n[HELP]\n");
+		printf("tester_push_swap [true|false|leak|valgrind| puissance(int)] [iteration(int)] \n");
+		return (0);
+	}
+
+	if (args[1] == "leak" || args[1] == "valgrind"){
+		g_only = MEMORY_LEAK;
+		list_test();
+		return (0);
+	}
 	if (args[1] == "true"){
 		g_only = TRUE;
 		list_test();

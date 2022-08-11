@@ -1,5 +1,3 @@
-using Posix;
-
 const string GREEN = "\033[1;92m";
 const string BLUE = "\033[1;36m";
 const string YELLOW = "\033[1;93m";
@@ -54,8 +52,8 @@ void calc_moy(string []args)
     {
         var tab = ft_get_random_tab(puissance);
         var str = ft_tab_to_string(tab);
-        system(@"$(push_swap_emp) \"$(str)\" > my_file");
-        system(@"cat ./my_file | ./checker_linux $(str) > file_check");
+        Posix.system(@"$(push_swap_emp) \"$(str)\" > my_file");
+        Posix.system(@"cat ./my_file | ./checker_linux $(str) > file_check");
         nbr = ft_count_line();
         if(nbr > max)
             max = nbr;
@@ -63,96 +61,96 @@ void calc_moy(string []args)
 		var FD_CHECK = FileStream.open("file_check", "r");
 		var s = FD_CHECK.read_line();
 		if (s == "OK")
-			print("\033[1;32m[OK] \033[0m");
+			stdout.printf("\033[1;32m[OK] \033[0m");
 		else if (s == "KO")
-			print(@"\033[1;31m[KO] {$(str)}\033[0m");
+			stdout.printf(@"\033[1;31m[KO] {$(str)}\033[0m");
         if (puissance <= 100)
 		{
 			if (nbr < 700)
-				print(@"Nombre de coups : $(GREEN)$(nbr)$(NONE)\n"); 
+				stdout.printf(@"Nombre de coups : $(GREEN)$(nbr)$(NONE)\n"); 
 			else if (nbr < 900)
-				print(@"Nombre de coups : $(BLUE)$(nbr)$(NONE)\n"); 
+				stdout.printf(@"Nombre de coups : $(BLUE)$(nbr)$(NONE)\n"); 
 			else if (nbr < 1100)
-				print(@"Nombre de coups : $(YELLOW)$(nbr)$(NONE)\n"); 
+				stdout.printf(@"Nombre de coups : $(YELLOW)$(nbr)$(NONE)\n"); 
 			else if (nbr < 1500)
-				print(@"Nombre de coups : $(ORANGE)$(nbr)$(NONE)\n"); 
+				stdout.printf(@"Nombre de coups : $(ORANGE)$(nbr)$(NONE)\n"); 
 			else
-				print(@"Nombre de coups : $(RED)$(nbr)$(NONE)\n"); 
+				stdout.printf(@"Nombre de coups : $(RED)$(nbr)$(NONE)\n"); 
 		}
 		else if (puissance <= 500)
 		{
 			if (nbr < 5500)
-				print(@"Nombre de coups : $(GREEN)$(nbr)$(NONE)\n"); 
+				stdout.printf(@"Nombre de coups : $(GREEN)$(nbr)$(NONE)\n"); 
 			else if (nbr < 7000)
-				print(@"Nombre de coups : $(BLUE)$(nbr)$(NONE)\n"); 
+				stdout.printf(@"Nombre de coups : $(BLUE)$(nbr)$(NONE)\n"); 
 			else if (nbr < 8500)
-				print(@"Nombre de coups : $(YELLOW)$(nbr)$(NONE)\n");
+				stdout.printf(@"Nombre de coups : $(YELLOW)$(nbr)$(NONE)\n");
 			else if (nbr < 11500)
-				print(@"Nombre de coups : $(ORANGE)$(nbr)$(NONE)\n");
+				stdout.printf(@"Nombre de coups : $(ORANGE)$(nbr)$(NONE)\n");
 			else
-				print(@"Nombre de coups : $(RED)$(nbr)$(NONE)\n");
+				stdout.printf(@"Nombre de coups : $(RED)$(nbr)$(NONE)\n");
 		}
 		else
-			print(@"Nombre de coups : \033[1m$(nbr)\033[0m\n");
+			stdout.printf(@"Nombre de coups : \033[1m$(nbr)\033[0m\n");
         i++;
     }
 	if (puissance <= 100)
 	{
 		if (max < 700)
-			print(@"max : $(GREEN)$(max)$(NONE)\n");
+			stdout.printf(@"max : $(GREEN)$(max)$(NONE)\n");
 		else if (max < 900)
-			print(@"max : $(BLUE)$(max)$(NONE)\n");
+			stdout.printf(@"max : $(BLUE)$(max)$(NONE)\n");
 		else if (max < 1100)
-			print(@"max : $(YELLOW)$(max)$(NONE)\n");
+			stdout.printf(@"max : $(YELLOW)$(max)$(NONE)\n");
 		else if (max < 1500)
-			print(@"max : $(ORANGE)$(max)$(NONE)\n");
+			stdout.printf(@"max : $(ORANGE)$(max)$(NONE)\n");
 		else
-			print(@"max : $(RED)$(max)$(NONE)\n");
+			stdout.printf(@"max : $(RED)$(max)$(NONE)\n");
 	}
 	else if (puissance <= 500)
 	{
 		if (max < 5500)
-			print(@"max : $(GREEN)$(max)$(NONE)\n");
+			stdout.printf(@"max : $(GREEN)$(max)$(NONE)\n");
 		else if (max < 7000)
-			print(@"max : $(BLUE)$(max)$(NONE)\n");
+			stdout.printf(@"max : $(BLUE)$(max)$(NONE)\n");
 		else if (max < 8500)
-			print(@"max : $(YELLOW)$(max)$(NONE)\n");
+			stdout.printf(@"max : $(YELLOW)$(max)$(NONE)\n");
 		else if (max < 11500)
-			print(@"max : $(ORANGE)$(max)$(NONE)\n");
+			stdout.printf(@"max : $(ORANGE)$(max)$(NONE)\n");
 		else
-			print(@"max : $(RED)$(max)$(NONE)\n");
+			stdout.printf(@"max : $(RED)$(max)$(NONE)\n");
 	}
 	else		
-		print(@"maxenne : $(GREEN)$(max)$(NONE)\n");
+		stdout.printf(@"maxenne : $(GREEN)$(max)$(NONE)\n");
 
 	moy /= i;
 	if (puissance <= 100)
 	{
 		if (moy < 700)
-			print(@"moyenne : $(GREEN)$(moy)$(NONE)\n");
+			stdout.printf(@"moyenne : $(GREEN)$(moy)$(NONE)\n");
 		else if (moy < 900)
-			print(@"moyenne : $(BLUE)$(moy)$(NONE)\n");
+			stdout.printf(@"moyenne : $(BLUE)$(moy)$(NONE)\n");
 		else if (moy < 1100)
-			print(@"moyenne : $(YELLOW)$(moy)$(NONE)\n");
+			stdout.printf(@"moyenne : $(YELLOW)$(moy)$(NONE)\n");
 		else if (moy < 1500)
-			print(@"moyenne : $(ORANGE)$(moy)$(NONE)\n");
+			stdout.printf(@"moyenne : $(ORANGE)$(moy)$(NONE)\n");
 		else
-			print(@"moyenne : $(RED)$(moy)$(NONE)\n");
+			stdout.printf(@"moyenne : $(RED)$(moy)$(NONE)\n");
 	}
 	else if (puissance <= 500)
 	{
 		if (moy < 5500)
-			print(@"moyenne : $(GREEN)$(moy)$(NONE)\n");
+			stdout.printf(@"moyenne : $(GREEN)$(moy)$(NONE)\n");
 		else if (moy < 7000)
-			print(@"moyenne : $(BLUE)$(moy)$(NONE)\n");
+			stdout.printf(@"moyenne : $(BLUE)$(moy)$(NONE)\n");
 		else if (moy < 8500)
-			print(@"moyenne : $(YELLOW)$(moy)$(NONE)\n");
+			stdout.printf(@"moyenne : $(YELLOW)$(moy)$(NONE)\n");
 		else if (moy < 11500)
-			print(@"moyenne : $(ORANGE)$(moy)$(NONE)\n");
+			stdout.printf(@"moyenne : $(ORANGE)$(moy)$(NONE)\n");
 		else
-			print(@"moyenne : $(RED)$(moy)$(NONE)\n");
+			stdout.printf(@"moyenne : $(RED)$(moy)$(NONE)\n");
 	}
 	else		
-		print(@"moyenne : $(GREEN)$(moy)$(NONE)\n");
-	system("rm my_file file_check");
+		stdout.printf(@"moyenne : $(GREEN)$(moy)$(NONE)\n");
+	Posix.system("rm my_file file_check");
 }
