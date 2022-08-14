@@ -25,38 +25,38 @@ void list_test()
 	/* TRUE = GOOD  */
 	/* FALSE = ERROR */
 
-	/* test({"52"}, true); */
-	/* test({""}, false); */
-	/* test({"5", "4", "3"}, true); */
-	/* test({"5", "1", "0", "2"}, true); */
-	/* test({"5 4A 3"}, false); */
-	/* test({"5 2 3 4 8"}, true); */
-	/* test({"42 -500 -2845 -21 54784 1541"}, true); */
-	/* test({"42", "500", "-2845", "-21", " 54784", "1541"}, true); */
-	/* test({"52 14 15"}, true); */
-	/* test({"e1 2 3 4 5"}, false); */
-	/* test({"1 2 4 3 5e"}, false); */
-	/* test({"1 2 3 4 5e"}, false); */
-	/* test({"+", "52"}, false); */
-	/* test({"1 2 3"}, true); */
-	/* test({" 1 2 3"}, true); */
-	/* test({"1 2 3 "}, true); */
-	/* test({" 1 2 3 "}, true); */
-	/* test({" 1   2               3 "}, true); */
-	/* test({"1 2 3 4 5"}, true); */
-	/* test({"5 4 3 2 1"}, true); */
-	/* test({"5", "3", "2", "1"}, true); */
-	/* test({" 5", "3  ", " 2", " 1"}, true); */
-	/* test({" 5", "8"}, true); */
-	/* test({"05 02"}, true); */
-	/* test({"2147483647 -2147483648"}, true); */
-	/* test({"0002147483647 -002147483648"}, true); */
-	/* test({"05 08 0009 00010 2"}, true); */
-	/* test({"05 5 005"}, false); */
-	/* test({"-00", "00"}, false); */
-	/* test({"052 02"}, true); */
-	/* test({"-0", "0"}, false); */
-	/* test({"0", "-0"}, false); */
+	test({"52"}, true);
+	test({""}, false);
+	test({"5", "4", "3"}, true);
+	test({"5", "1", "0", "2"}, true);
+	test({"5 4A 3"}, false);
+	test({"5 2 3 4 8"}, true);
+	test({"42 -500 -2845 -21 54784 1541"}, true);
+	test({"42", "500", "-2845", "-21", " 54784", "1541"}, true);
+	test({"52 14 15"}, true);
+	test({"e1 2 3 4 5"}, false);
+	test({"1 2 4 3 5e"}, false);
+	test({"1 2 3 4 5e"}, false);
+	test({"+", "52"}, false);
+	test({"1 2 3"}, true);
+	test({" 1 2 3"}, true);
+	test({"1 2 3 "}, true);
+	test({" 1 2 3 "}, true);
+	test({" 1   2               3 "}, true);
+	test({"1 2 3 4 5"}, true);
+	test({"5 4 3 2 1"}, true);
+	test({"5", "3", "2", "1"}, true);
+	test({" 5", "3  ", " 2", " 1"}, true);
+	test({" 5", "8"}, true);
+	test({"05 02"}, true);
+	test({"2147483647 -2147483648"}, true);
+	test({"0002147483647 -002147483648"}, true);
+	test({"05 08 0009 00010 2"}, true);
+	test({"05 5 005"}, false);
+	test({"-00", "00"}, false);
+	test({"052 02"}, true);
+	test({"-0", "0"}, false);
+	test({"0", "-0"}, false);
 	test({"-10", "-23"}, true);
 	test({"-0"}, true);
 	test({"4 2 3", "5"}, true);
@@ -81,16 +81,12 @@ void list_test()
 	test({"8 -214748364945465565656"}, false);
 	test({"25 514748364945465565656"}, false);
 	test({"4", "999999999999999"}, false);
-
-	Posix.system("rm -rf tmp_1 tmp_2 tmp_3");
+	test({"12          "}, false);
 }
 
 void test(string[] arg, bool compare)
 {
 	var tab = tab_to_string(arg);
-	FileStream FD_ERR;
-	FileStream FD_OUT;
-	string str;
 
 	if (g_only == MEMORY_LEAK)
 	{
@@ -132,14 +128,6 @@ void test(string[] arg, bool compare)
 		close(fds[0]);
 		return ;
 	}
-	Posix.system(@"$(push_swap_emp) $(tab) 1>tmp_1  2> tmp_2");
-	FD_ERR = FileStream.open("tmp_2", "r");
-	str = FD_ERR.read_line();
-
-
-
-
-
 
 
 	if (compare == false)
@@ -162,7 +150,7 @@ void test(string[] arg, bool compare)
 			close(fds_err[0]);
 			dup2(fds_out[1], 1);
 			dup2(fds_err[1], 2);
-			execvp("../push_swap", av);
+			execvp(@"$(push_swap_emp)", av);
 			close(fds_out[1]);
 			close(fds_err[1]);
 			exit(0);
@@ -187,32 +175,62 @@ void test(string[] arg, bool compare)
 			printf("\033[1;31mKO [ %s] \033[0m", tab);
 	
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
 	else
 	{
 		if (g_only == FALSE)
 			return ;
-		Posix.system(@"cat tmp_1 | ./checker_linux 2> /dev/null $(tab) > tmp_3");
-		FD_OUT = FileStream.open("tmp_3", "r");
-		str = FD_OUT.read_line();
+		string []av = {"push_swap"};
+		foreach(var i in arg)
+			av += @"$i";
+		int fds_push_swap_out[2];
+
+		pipe(fds_push_swap_out);
+		{var pid = fork();
+		if(pid == 0)
+		{
+			close(fds_push_swap_out[0]);
+			dup2(fds_push_swap_out[1], 1);
+			
+			execvp(@"$(push_swap_emp)", av);
+			
+			close(fds_push_swap_out[1]);
+			exit(0);
+		}
+		waitpid(pid, null, 0);}
+		close(fds_push_swap_out[1]);
+		int fds_out_checker[2];
+		pipe(fds_out_checker);
+		
+		var pid = fork();
+		if(pid == 0)
+		{
+			close(fds_push_swap_out[1]);
+			close(fds_out_checker[0]);
+			
+			dup2(fds_out_checker[1], 1);
+			dup2(fds_push_swap_out[0], 0);
+			string []av2 = {"checker_linux"};
+			foreach(var i in arg)
+				av2 += @"$i";
+			execvp("./checker_linux", av2);
+			
+			close(fds_push_swap_out[0]);
+			close(fds_out_checker[1]);
+			exit(0);
+		}
+		waitpid(pid, null, 0);
+		close(fds_push_swap_out[0]);
+		close(fds_out_checker[1]);
+
+		var FD_OUT = FileStream.fdopen(fds_out_checker[0], "r");
+		var str = FD_OUT.read_line();
 		if (str != null && "OK" in str)
 			printf("\033[1;32mOK \033[0m");
 		else if (str != null && "KO" in str)
 			printf("\033[1;31mKO [ %s] \033[0m", tab);
 		else
-			printf("\033[1;31m ERROR [ %s] \033[0m", tab);
+			printf("\033[1;31m ERROR [ %s & %s] \033[0m", tab, str);
+		close(fds_out_checker[0]);
 	}
 }
 
