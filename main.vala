@@ -25,37 +25,38 @@ void list_test()
 	/* TRUE = GOOD  */
 	/* FALSE = ERROR */
 
-	test({"52"}, true);
-	test({"5", "4", "3"}, true);
-	test({"5", "1", "0", "2"}, true);
-	test({"5 4A 3"}, false);
-	test({"5 2 3 4 8"}, true);
-	test({"42 -500 -2845 -21 54784 1541"}, true);
-	test({"42", "500", "-2845", "-21", " 54784", "1541"}, true);
-	test({"52 14 15"}, true);
-	test({"e1 2 3 4 5"}, false);
-	test({"1 2 4 3 5e"}, false);
-	test({"1 2 3 4 5e"}, false);
-	test({"+", "52"}, false);
-	test({"1 2 3"}, true);
-	test({" 1 2 3"}, true);
-	test({"1 2 3 "}, true);
-	test({" 1 2 3 "}, true);
-	test({" 1   2               3 "}, true);
-	test({"1 2 3 4 5"}, true);
-	test({"5 4 3 2 1"}, true);
-	test({"5", "3", "2", "1"}, true);
-	test({" 5", "3  ", " 2", " 1"}, true);
-	test({" 5", "8"}, true);
-	test({"05 02"}, true);
-	test({"2147483647 -2147483648"}, true);
-	test({"0002147483647 -002147483648"}, true);
-	test({"05 08 0009 00010 2"}, true);
-	test({"05 5 005"}, false);
-	test({"-00", "00"}, false);
-	test({"052 02"}, true);
-	test({"-0", "0"}, false);
-	test({"0", "-0"}, false);
+	/* test({"52"}, true); */
+	/* test({""}, false); */
+	/* test({"5", "4", "3"}, true); */
+	/* test({"5", "1", "0", "2"}, true); */
+	/* test({"5 4A 3"}, false); */
+	/* test({"5 2 3 4 8"}, true); */
+	/* test({"42 -500 -2845 -21 54784 1541"}, true); */
+	/* test({"42", "500", "-2845", "-21", " 54784", "1541"}, true); */
+	/* test({"52 14 15"}, true); */
+	/* test({"e1 2 3 4 5"}, false); */
+	/* test({"1 2 4 3 5e"}, false); */
+	/* test({"1 2 3 4 5e"}, false); */
+	/* test({"+", "52"}, false); */
+	/* test({"1 2 3"}, true); */
+	/* test({" 1 2 3"}, true); */
+	/* test({"1 2 3 "}, true); */
+	/* test({" 1 2 3 "}, true); */
+	/* test({" 1   2               3 "}, true); */
+	/* test({"1 2 3 4 5"}, true); */
+	/* test({"5 4 3 2 1"}, true); */
+	/* test({"5", "3", "2", "1"}, true); */
+	/* test({" 5", "3  ", " 2", " 1"}, true); */
+	/* test({" 5", "8"}, true); */
+	/* test({"05 02"}, true); */
+	/* test({"2147483647 -2147483648"}, true); */
+	/* test({"0002147483647 -002147483648"}, true); */
+	/* test({"05 08 0009 00010 2"}, true); */
+	/* test({"05 5 005"}, false); */
+	/* test({"-00", "00"}, false); */
+	/* test({"052 02"}, true); */
+	/* test({"-0", "0"}, false); */
+	/* test({"0", "-0"}, false); */
 	test({"-10", "-23"}, true);
 	test({"-0"}, true);
 	test({"4 2 3", "5"}, true);
@@ -79,6 +80,7 @@ void list_test()
 	test({"9 -21474836494 8"}, false);
 	test({"8 -214748364945465565656"}, false);
 	test({"25 514748364945465565656"}, false);
+	test({"4", "999999999999999"}, false);
 
 	Posix.system("rm -rf tmp_1 tmp_2 tmp_3");
 }
@@ -133,15 +135,71 @@ void test(string[] arg, bool compare)
 	Posix.system(@"$(push_swap_emp) $(tab) 1>tmp_1  2> tmp_2");
 	FD_ERR = FileStream.open("tmp_2", "r");
 	str = FD_ERR.read_line();
+
+
+
+
+
+
+
 	if (compare == false)
 	{
 		if (g_only == TRUE)
 			return ;
-		if (str == "Error")
+		int fds_out[2];
+		int fds_err[2];
+		pipe(fds_err);
+		pipe(fds_out);
+
+		var pid = fork();
+		if (pid == 0)
+		{
+			string []av = {"push_swap"};
+			foreach(var i in arg)
+				av += @"$i";
+
+			close(fds_out[0]);
+			close(fds_err[0]);
+			dup2(fds_out[1], 1);
+			dup2(fds_err[1], 2);
+			execvp("../push_swap", av);
+			close(fds_out[1]);
+			close(fds_err[1]);
+			exit(0);
+		}
+		waitpid(pid, null, 0);
+		close(fds_out[1]);
+		close(fds_err[1]);
+	
+		var sout = FileStream.fdopen(fds_out[0], "r");
+		var s1 = sout.read_line();
+		
+		var serr = FileStream.fdopen(fds_err[0], "r");
+		var s2 = serr.read_line();
+		
+		close(fds_out[0]);
+		close(fds_err[0]);
+		
+
+		if (s2 == "Error" && s1 == null)
 			printf("\033[1;32mOK \033[0m");
 		else
 			printf("\033[1;31mKO [ %s] \033[0m", tab);
+	
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
 	else
 	{
 		if (g_only == FALSE)
