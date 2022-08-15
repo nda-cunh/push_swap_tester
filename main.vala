@@ -25,10 +25,14 @@ void list_test()
 	/* TRUE = GOOD  */
 	/* FALSE = ERROR */
 
+	test({"+52"}, true);
+	test({"+52", "-5"}, true);
 	test({"52"}, true);
 	test({""}, false);
 	test({"5", "4", "3"}, true);
 	test({"5", "1", "0", "2"}, true);
+	test({"5 1 + 000000 2"}, false);
+	test({"5", "", "0", "2"}, false);
 	test({"5 4A 3"}, false);
 	test({"5 2 3 4 8"}, true);
 	test({"42 -500 -2845 -21 54784 1541"}, true);
@@ -47,6 +51,7 @@ void list_test()
 	test({"5 4 3 2 1"}, true);
 	test({"5", "3", "2", "1"}, true);
 	test({" 5", "3  ", " 2", " 1"}, true);
+	test({"4", "000000000000000000000000000000000000000000000000000000002"}, true);
 	test({" 5", "8"}, true);
 	test({"05 02"}, true);
 	test({"2147483647 -2147483648"}, true);
