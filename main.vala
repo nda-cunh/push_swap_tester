@@ -238,7 +238,8 @@ void test(string[] arg, bool compare)
 		else if (str != null && "KO" in str)
 			printf("\033[1;31mKO [ %s] \033[0m", tab);
 		else
-			printf("\033[1;31m ERROR [ %s & %s] \033[0m", tab, str);
+			printf("\033[1;31mKO [ %s] \033[0m", tab);
+		/* printf("\033[1;31m ERROR [ %s & %s] \033[0m", tab, str); */
 		close(fds_out_checker[0]);
 	}
 }
