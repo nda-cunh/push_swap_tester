@@ -81,7 +81,7 @@ void list_test()
 	test({"8 -214748364945465565656"}, false);
 	test({"25 514748364945465565656"}, false);
 	test({"4", "999999999999999"}, false);
-	test({"12          "}, false);
+	test({"12          "}, true);
 }
 
 void test(string[] arg, bool compare)
