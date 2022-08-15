@@ -25,6 +25,8 @@ void list_test()
 	/* TRUE = GOOD  */
 	/* FALSE = ERROR */
 
+	test({"+000000001, 5, 3, -5"}, true);
+	test({"+ 000000001, 5, 3, -5"}, false);
 	test({"+52"}, true);
 	test({"+52", "-5"}, true);
 	test({"52"}, true);
@@ -196,6 +198,7 @@ void test(string[] arg, bool compare)
 			close(fds_push_swap_out[0]);
 			dup2(fds_push_swap_out[1], 1);
 			
+			close(2);
 			execvp(@"$(push_swap_emp)", av);
 			
 			close(fds_push_swap_out[1]);
@@ -214,6 +217,7 @@ void test(string[] arg, bool compare)
 			
 			dup2(fds_out_checker[1], 1);
 			dup2(fds_push_swap_out[0], 0);
+			close(2);
 			string []av2 = {"checker_linux"};
 			foreach(var i in arg)
 				av2 += @"$i";
