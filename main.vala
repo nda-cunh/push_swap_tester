@@ -25,8 +25,8 @@ void list_test()
 	/* TRUE = GOOD  */
 	/* FALSE = ERROR */
 
-	test({"+000000001, 5, 3, -5"}, true);
-	test({"+ 000000001, 5, 3, -5"}, false);
+	test({"+000000001", "5", "3", "-5"}, true);
+	test({"+ 000000001", "5", "3", "-5"}, false);
 	test({"+52"}, true);
 	test({"+52", "-5"}, true);
 	test({"52"}, true);
