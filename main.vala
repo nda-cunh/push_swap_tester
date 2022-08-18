@@ -31,6 +31,8 @@ void list_test()
 	test({"+52", "-5"}, true);
 	test({"52"}, true);
 	test({""}, false);
+	test({" "}, false);
+	test({"  "}, false);
 	test({"5", "4", "3"}, true);
 	test({"5", "1", "0", "2"}, true);
 	test({"5 1 + 000000 2"}, false);
@@ -75,6 +77,9 @@ void list_test()
 	test({"2+5"}, false);
 	test({"2", "", "3"}, false);
 	test({"3", "", "2"}, false);
+	test({"", ""}, false);
+	test({"", " "}, false);
+	test({" ", ""}, false);
 	test({"   ", " ", "   "}, false);
 	test({"   ", "-", "   "}, false);
 	test({"   ", "-a", "   "}, false);
@@ -89,6 +94,8 @@ void list_test()
 	test({"25 514748364945465565656"}, false);
 	test({"4", "999999999999999"}, false);
 	test({"12          "}, true);
+	test({"454845456689864", "5455464454545"}, false);
+
 }
 
 void test(string[] arg, bool compare)
