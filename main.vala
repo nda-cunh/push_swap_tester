@@ -1,6 +1,3 @@
-// modules: gio-2.0 posix
-// vapidirs: vapi
-// sources: main.vala moy.vala
 using Posix;
 
 string ft_getline(int fd)
@@ -78,9 +75,6 @@ void list_test()
 	test({"5+2"}, false);
 	test({"2-5"}, false);
 	test({"2+5"}, false);
-	test({"2+5 1"}, false);
-	test({"8 2+5 1"}, false);
-	test({"8 2+5"}, false);
 	test({"2", "", "3"}, false);
 	test({"3", "", "2"}, false);
 	test({"", ""}, false);
@@ -252,6 +246,7 @@ void test(string[] arg, bool compare)
 			printf("\033[1;31mKO [ %s] \033[0m", tab);
 		else
 			printf("\033[1;31mKO [ %s] \033[0m", tab);
+		/* printf("\033[1;31m ERROR [ %s & %s] \033[0m", tab, str); */
 		close(fds_out_checker[0]);
 	}
 }
