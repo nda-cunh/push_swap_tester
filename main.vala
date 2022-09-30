@@ -289,7 +289,7 @@ int main(string []args)
 
 	if (FD_CHECKER == null)
 	{
-		Posix.system("wget -c https://projects.intra.42.fr/uploads/document/document/9218/checker_linux -q --show-progress");
+		Posix.system("wget -c https://projects.intra.42.fr/uploads/document/document/11422/checker_linux -q --show-progress");
 		Posix.chmod("checker_linux", S_IRWXU);
 		printf("\n");
 	}
