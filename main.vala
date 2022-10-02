@@ -293,6 +293,12 @@ int main(string []args)
 		Posix.chmod("checker_linux", S_IRWXU);
 		printf("\n");
 	}
+	FD_CHECKER = FileStream.open("./checker_linux", "r");
+	if (FD_CHECKER == null)
+	{
+		printf("[ERROR]: checker_linux non trouvée.\n");
+		return (1);
+	}
 	if (args[1] == "help" || args[1] == "-h"){
 		printf("\n[HELP]\n");
 		printf("tester_push_swap [true|false|leak|valgrind| puissance(int)] [iteration(int)] \n");
