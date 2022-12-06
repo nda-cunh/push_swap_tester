@@ -299,6 +299,7 @@ int main(string []args)
 		printf("[ERROR]: checker_linux non trouvée.\n");
 		return (1);
 	}
+	Posix.chmod("checker_linux", S_IRWXU);
 	if (args[1] == "help" || args[1] == "-h"){
 		printf("\n[HELP]\n");
 		printf("tester_push_swap [true|false|leak|valgrind| puissance(int)] [iteration(int)] \n");
