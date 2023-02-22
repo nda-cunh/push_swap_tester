@@ -51,7 +51,7 @@ void calc_moy(string []args)
     while(i != foix)
     {
         var tab = ft_get_random_tab(puissance);
-        var str = ft_tab_to_string(tab);
+        var str = ft_tab_to_string(tab).strip();
         Posix.system(@"$(push_swap_emp) \"$(str)\" > my_file");
         Posix.system(@"cat ./my_file | ./checker_linux $(str) > file_check");
         nbr = ft_count_line();
