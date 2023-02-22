@@ -1,3 +1,4 @@
+//valac moy.vala main.vala --pkg=posix --vapidir=./vapi 
 const string GREEN = "\033[1;92m";
 const string BLUE = "\033[1;36m";
 const string YELLOW = "\033[1;93m";
@@ -29,15 +30,72 @@ string ft_tab_to_string(int []tab)
     return(str);
 }
 
-int ft_count_line()
+string ft_count_line(int fd_in, out int nb)
 {
-    var fd = FileStream.open ("my_file", "r");
-    var i = 0;
+    var fd = FileStream.fdopen (fd_in, "r");
+	var str = fd.read_all();
+   
+	var split = str.split("\n");
+	nb = split.length;
 
-    while (fd.read_line() != null)
-        i++;
-    return (i);
+	return (str);
 }
+
+int run_exec(string str, out int nbr){
+	int fds[2];
+	int pid;
+
+	Posix.pipe(fds);
+	pid = Posix.fork();
+	if (pid == 0){
+		Posix.dup2(fds[1], 1);
+		Posix.close(fds[0]);
+		Posix.execv(push_swap_emp, {"push_swap", @"$str"});
+	}
+	else
+		Posix.close(fds[1]);
+	var str_push = ft_count_line(fds[0], out nbr);
+	Posix.close(fds[0]);
+	Posix.pipe(fds);
+	pid = Posix.fork();
+	if (pid == 0){
+		Posix.dup2(fds[1], 1);
+		Posix.close(fds[0]);
+		stdout.printf("%s", str_push);
+		Posix.exit(0);
+	}
+	else
+		Posix.close(fds[1]);
+	return (fds[0]);
+}
+
+string run_push_swap(string str, out int nbr){
+	int pid;
+	int fds_out[2];
+	int fd_in;
+
+	fd_in = run_exec(str, out nbr);
+	Posix.pipe(fds_out);
+	pid = Posix.fork();
+	if (pid == 0){
+		Posix.dup2(fd_in, 0);
+		Posix.close(fds_out[0]);
+		Posix.dup2(fds_out[1], 1);
+		Posix.execv("./checker_linux", {"checker_linux", @"$str"});
+	}
+	else{
+		Posix.close(fds_out[1]);
+		Posix.close(fd_in);
+	}
+	Posix.waitpid(-1, null, 0);
+	Posix.waitpid(-1, null, 0);
+	uint8 buf[42];
+	var x = Posix.read(fds_out[0], buf, 42);
+	buf[x] = '\0';
+	Posix.close(fds_out[0]);
+	return ((string)buf);
+}
+
 
 void calc_moy(string []args)
 {
@@ -52,17 +110,15 @@ void calc_moy(string []args)
     {
         var tab = ft_get_random_tab(puissance);
         var str = ft_tab_to_string(tab).strip();
-        Posix.system(@"$(push_swap_emp) \"$(str)\" > my_file");
-        Posix.system(@"cat ./my_file | ./checker_linux $(str) > file_check");
-        nbr = ft_count_line();
+
+		var s = run_push_swap(str, out nbr);
+
         if(nbr > max)
             max = nbr;
         moy += nbr;
-		var FD_CHECK = FileStream.open("file_check", "r");
-		var s = FD_CHECK.read_line();
-		if (s == "OK")
+		if (s == "OK\n")
 			stdout.printf("\033[1;32m[OK] \033[0m");
-		else if (s == "KO")
+		else if (s == "KO\n")
 			stdout.printf(@"\033[1;31m[KO] {$(str)}\033[0m");
         if (puissance <= 100)
 		{
@@ -152,5 +208,5 @@ void calc_moy(string []args)
 	}
 	else		
 		stdout.printf(@"moyenne : $(GREEN)$(moy)$(NONE)\n");
-	Posix.system("rm my_file file_check");
+	Posix.system("rm -rf my_file file_check");
 }
