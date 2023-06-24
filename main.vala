@@ -306,7 +306,7 @@ int main(string []args)
 		return (0);
 	}
 
-	if (args[1] == "leak" || args[1] == "valgrind"){
+	if ("leak" in args[1] || "valgrind" in args[1]){
 		g_only = MEMORY_LEAK;
 		list_test();
 		return (0);
