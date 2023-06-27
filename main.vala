@@ -289,7 +289,7 @@ int main(string []args)
 
 	if (FD_CHECKER == null)
 	{
-		Posix.system("wget -c https://projects.intra.42.fr/uploads/document/document/13507/checker_linux -q --show-progress");
+		Posix.system("wget -c https://cdn.intra.42.fr/document/document/17592/checker_linux -q --show-progress");
 		Posix.chmod("checker_linux", S_IRWXU);
 		printf("\n");
 	}
@@ -305,8 +305,7 @@ int main(string []args)
 		printf("tester_push_swap [true|false|leak|valgrind| puissance(int)] [iteration(int)] \n");
 		return (0);
 	}
-
-	if ("leak" in args[1] || "valgrind" in args[1]){
+	if (args[1] == "leak" || args[1] == "valgrind"){
 		g_only = MEMORY_LEAK;
 		list_test();
 		return (0);
