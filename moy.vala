@@ -10,12 +10,13 @@ int[] ft_get_random_tab(int size)
 {
     var tab = new int[size];
     var n = 0;
+	var rand = new Rand();
     
-    for (var i = 0; i != size; i++)
+    for (var i = 0; i != size; ++i)
     {
-        n = Random.int_range(int.MIN, int.MAX);
+        n = rand.int_range(int.MIN, int.MAX);
         if (n in tab)
-            i--;
+            --i;
         else
             tab[i] = n;
     }
@@ -30,183 +31,136 @@ string ft_tab_to_string(int []tab)
     return(str);
 }
 
-string ft_count_line(int fd_in, out int nb)
-{
-    var fd = FileStream.fdopen (fd_in, "r");
-	var str = fd.read_all();
-   
-	var split = str.split("\n");
-	nb = split.length;
+int count_line(char *s) {
+	var i = 0;
+	var n = 0;
 
-	return (str);
+	while (s[i] != '\0') {
+		if (s[i] == '\n')
+			n++;
+		i++;
+	}
+	return n;
 }
 
-int run_exec(string str, out int nbr){
-	int fds[2];
-	int pid;
-
-	Posix.pipe(fds);
-	pid = Posix.fork();
-	if (pid == 0){
-		Posix.dup2(fds[1], 1);
-		Posix.close(fds[0]);
-		Posix.execv(push_swap_emp, {"push_swap", @"$str"});
+void print_line(int power, int nbr, string msg) {
+	if (power <= 100)
+	{
+		if (nbr < 700)
+			stdout.printf("%s %s%d\033[0m\n", msg, GREEN, nbr); 
+		else if (nbr < 900)
+			stdout.printf("%s %s%d\033[0m\n", msg, BLUE, nbr); 
+		else if (nbr < 1100)
+			stdout.printf("%s %s%d\033[0m\n", msg, YELLOW, nbr); 
+		else if (nbr < 1500)
+			stdout.printf("%s %s%d\033[0m\n", msg, ORANGE, nbr); 
+		else
+			stdout.printf("%s %s%d\033[0m\n", msg, RED, nbr); 
+	}
+	else if (power <= 500)
+	{
+		if (nbr < 5500)
+			stdout.printf("%s %s%d\033[0m\n", msg, GREEN, nbr); 
+		else if (nbr < 7000)
+			stdout.printf("%s %s%d\033[0m\n", msg, BLUE, nbr); 
+		else if (nbr < 8500)
+			stdout.printf("%s %s%d\033[0m\n", msg, YELLOW, nbr); 
+		else if (nbr < 11500)
+			stdout.printf("%s %s%d\033[0m\n", msg, ORANGE, nbr); 
+		else
+			stdout.printf("%s %s%d\033[0m\n", msg, RED, nbr); 
 	}
 	else
-		Posix.close(fds[1]);
-	var str_push = ft_count_line(fds[0], out nbr);
-	Posix.close(fds[0]);
-	Posix.pipe(fds);
-	pid = Posix.fork();
-	if (pid == 0){
-		Posix.dup2(fds[1], 1);
-		Posix.close(fds[0]);
-		stdout.printf("%s", str_push);
-		Posix.exit(0);
-	}
-	else
-		Posix.close(fds[1]);
-	return (fds[0]);
+		stdout.printf("%s \033[37m%d033[0m\n", msg, nbr);
 }
 
-string run_push_swap(string str, out int nbr){
-	int pid;
-	int fds_out[2];
-	int fd_in;
-
-	fd_in = run_exec(str, out nbr);
-	Posix.pipe(fds_out);
-	pid = Posix.fork();
-	if (pid == 0){
-		Posix.dup2(fd_in, 0);
-		Posix.close(fds_out[0]);
-		Posix.dup2(fds_out[1], 1);
-		Posix.execv("./checker_linux", {"checker_linux", @"$str"});
-	}
-	else{
-		Posix.close(fds_out[1]);
-		Posix.close(fd_in);
-	}
-	Posix.waitpid(-1, null, 0);
-	Posix.waitpid(-1, null, 0);
-	uint8 buf[42];
-	var x = Posix.read(fds_out[0], buf, 42);
-	buf[x] = '\0';
-	Posix.close(fds_out[0]);
-	return ((string)buf);
+// worker
+async int run_push_swap(int power) {
+	var thread = new Thread<string>("async moyenne", () => {
+		var result = "";
+		var tab = ft_get_random_tab(power + 1);
+		var av = ft_tab_to_string(tab);
+		try {
+			var pid = new Subprocess.newv({"push_swap", @"$av"}, SubprocessFlags.STDOUT_PIPE);
+			var output = pid.get_stdout_pipe();
+			uint8 buffer[32768] = {};
+			size_t len;
+			while ((len = output.read(buffer)) > 0) {
+				buffer[len] = '\0';
+				result += (string)buffer;
+			}
+			pid.wait();
+		} catch (Error e) {
+			printerr(e.message);
+		}
+		Idle.add(run_push_swap.callback);
+		return result; 
+	});
+	yield;
+	return count_line(thread.join());
 }
 
 
-void calc_moy(string []args)
-{
-    var puissance = args[1] != null ? int.parse(args[1]) : 10;
-    var foix = args.length > 2 ? int.parse(args[2]) : 10;
-    var nbr = 0;
-    var max = 0;
-    var moy = 0.0;
+async int []exec_all_push_swap(int nbr, int power) {
+	uint begin = 0;
+	uint max = get_num_processors() * 2;
+	int []result = {};
 
-    var i = 0;
-    while(i != foix)
-    {
-        var tab = ft_get_random_tab(puissance);
-        var str = ft_tab_to_string(tab).strip();
-
-		var s = run_push_swap(str, out nbr);
-
-        if(nbr > max)
-            max = nbr;
-        moy += nbr;
-		if (s == "OK\n")
-			stdout.printf("\033[1;32m[OK] \033[0m");
-		else if (s == "KO\n")
-			stdout.printf(@"\033[1;31m[KO] {$(str)}\033[0m");
-        if (puissance <= 100)
-		{
-			if (nbr < 700)
-				stdout.printf(@"Nombre de coups : $(GREEN)$(nbr)$(NONE)\n"); 
-			else if (nbr < 900)
-				stdout.printf(@"Nombre de coups : $(BLUE)$(nbr)$(NONE)\n"); 
-			else if (nbr < 1100)
-				stdout.printf(@"Nombre de coups : $(YELLOW)$(nbr)$(NONE)\n"); 
-			else if (nbr < 1500)
-				stdout.printf(@"Nombre de coups : $(ORANGE)$(nbr)$(NONE)\n"); 
-			else
-				stdout.printf(@"Nombre de coups : $(RED)$(nbr)$(NONE)\n"); 
+	for (int i = 0; i < nbr; ++i) {
+		begin++;
+		Idle.add(() => {
+			run_push_swap.begin(power, (obj, res)=> {
+				var nb_hit = run_push_swap.end(res);
+				result += nb_hit;
+				print_line(power, nb_hit, "Nombre de coups : ");
+				begin--;
+			});
+			return false;
+		});
+		while (begin == max) {
+			Idle.add(exec_all_push_swap.callback);
+			yield;
 		}
-		else if (puissance <= 500)
-		{
-			if (nbr < 5500)
-				stdout.printf(@"Nombre de coups : $(GREEN)$(nbr)$(NONE)\n"); 
-			else if (nbr < 7000)
-				stdout.printf(@"Nombre de coups : $(BLUE)$(nbr)$(NONE)\n"); 
-			else if (nbr < 8500)
-				stdout.printf(@"Nombre de coups : $(YELLOW)$(nbr)$(NONE)\n");
-			else if (nbr < 11500)
-				stdout.printf(@"Nombre de coups : $(ORANGE)$(nbr)$(NONE)\n");
-			else
-				stdout.printf(@"Nombre de coups : $(RED)$(nbr)$(NONE)\n");
-		}
-		else
-			stdout.printf(@"Nombre de coups : \033[1m$(nbr)\033[0m\n");
-        i++;
-    }
-	if (puissance <= 100)
-	{
-		if (max < 700)
-			stdout.printf(@"max : $(GREEN)$(max)$(NONE)\n");
-		else if (max < 900)
-			stdout.printf(@"max : $(BLUE)$(max)$(NONE)\n");
-		else if (max < 1100)
-			stdout.printf(@"max : $(YELLOW)$(max)$(NONE)\n");
-		else if (max < 1500)
-			stdout.printf(@"max : $(ORANGE)$(max)$(NONE)\n");
-		else
-			stdout.printf(@"max : $(RED)$(max)$(NONE)\n");
 	}
-	else if (puissance <= 500)
-	{
-		if (max < 5500)
-			stdout.printf(@"max : $(GREEN)$(max)$(NONE)\n");
-		else if (max < 7000)
-			stdout.printf(@"max : $(BLUE)$(max)$(NONE)\n");
-		else if (max < 8500)
-			stdout.printf(@"max : $(YELLOW)$(max)$(NONE)\n");
-		else if (max < 11500)
-			stdout.printf(@"max : $(ORANGE)$(max)$(NONE)\n");
-		else
-			stdout.printf(@"max : $(RED)$(max)$(NONE)\n");
+	// Wait all thread
+	while (result.length != nbr) {
+		Idle.add(exec_all_push_swap.callback);
+		yield;
 	}
-	else		
-		stdout.printf(@"maxenne : $(GREEN)$(max)$(NONE)\n");
+	return result;
+}
 
-	moy /= i;
-	if (puissance <= 100)
-	{
-		if (moy < 700)
-			stdout.printf(@"moyenne : $(GREEN)$(moy)$(NONE)\n");
-		else if (moy < 900)
-			stdout.printf(@"moyenne : $(BLUE)$(moy)$(NONE)\n");
-		else if (moy < 1100)
-			stdout.printf(@"moyenne : $(YELLOW)$(moy)$(NONE)\n");
-		else if (moy < 1500)
-			stdout.printf(@"moyenne : $(ORANGE)$(moy)$(NONE)\n");
-		else
-			stdout.printf(@"moyenne : $(RED)$(moy)$(NONE)\n");
+// main of moy.vala
+void calc_moy(string []args) {
+    var power = args[1] != null ? int.parse(args[1]) : 10;
+    var nbr = args.length > 2 ? int.parse(args[2]) : 10;
+
+	var loop = new MainLoop();
+	Idle.add(() => {
+		exec_all_push_swap.begin(nbr, power, (obj, res)=> {
+			var tab = exec_all_push_swap.end(res);
+			print_result(power, tab);
+			loop.quit();
+		});
+		return false;
+	});
+	loop.run();
+}
+
+void print_result(int power, int []tab) {
+	var moyenne = 0;
+	var min = int.MAX;
+	var max = 0;
+	foreach (var i in tab) {
+		if (i > max)
+			max = i;
+		if (i < min)
+			min = i;
+		moyenne += i;
 	}
-	else if (puissance <= 500)
-	{
-		if (moy < 5500)
-			stdout.printf(@"moyenne : $(GREEN)$(moy)$(NONE)\n");
-		else if (moy < 7000)
-			stdout.printf(@"moyenne : $(BLUE)$(moy)$(NONE)\n");
-		else if (moy < 8500)
-			stdout.printf(@"moyenne : $(YELLOW)$(moy)$(NONE)\n");
-		else if (moy < 11500)
-			stdout.printf(@"moyenne : $(ORANGE)$(moy)$(NONE)\n");
-		else
-			stdout.printf(@"moyenne : $(RED)$(moy)$(NONE)\n");
-	}
-	else		
-		stdout.printf(@"moyenne : $(GREEN)$(moy)$(NONE)\n");
-	Posix.system("rm -rf my_file file_check");
+	moyenne = moyenne / tab.length;
+	stdout.printf("\n");
+	print_line(power, moyenne, "[Moyenne]: ");
+	print_line(power, max, "[Max]:     ");
+	print_line(power, min, "[Min]:     ");
 }
