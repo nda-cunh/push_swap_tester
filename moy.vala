@@ -37,8 +37,8 @@ int count_line(char *s) {
 
 	while (s[i] != '\0') {
 		if (s[i] == '\n')
-			n++;
-		i++;
+			++n;
+		++i;
 	}
 	return n;
 }
@@ -74,22 +74,58 @@ void print_line(int power, int nbr, string msg) {
 		stdout.printf("%s \033[37m%d033[0m\n", msg, nbr);
 }
 
+bool test_push_swap(ref string av, ref string input) {
+	try {
+		uint8 buffer[16];
+		size_t len = 0;
+		var pid = new Subprocess.newv({"./checker_linux", av}, SubprocessFlags.STDOUT_PIPE | SubprocessFlags.STDIN_PIPE);
+
+		var @in = pid.get_stdin_pipe();
+		var @out = pid.get_stdout_pipe();
+
+		// read all input pipe
+		in.write_all(input.data, out len);
+		in.close();
+		
+		// write all output pipe
+		out.read_all(buffer, out len);
+		buffer[len] = '\0';
+		out.close();
+		
+		pid.wait();
+		if ((string)buffer == "OK")
+			return true;
+		return false;
+	}
+	catch(Error e) {
+		printerr("%s\n", e.message);
+	}
+	return false;
+}
+
+
 // worker
-async int run_push_swap(int power) {
-	var thread = new Thread<string>("async moyenne", () => {
-		var result = "";
+async PushSwap run_push_swap(int power) {
+	bool test = false;
+	var thread = new Thread<string?>("async moyenne", () => {
+		string? result = null;
 		var tab = ft_get_random_tab(power + 1);
 		var av = ft_tab_to_string(tab);
 		try {
-			var pid = new Subprocess.newv({@"$push_swap_emp", @"$av"}, SubprocessFlags.STDOUT_PIPE);
+			var pid = new Subprocess.newv({push_swap_emp, av}, SubprocessFlags.STDOUT_PIPE);
 			var output = pid.get_stdout_pipe();
-			uint8 buffer[32768] = {};
+			uint8 buffer[65536] = {};
 			size_t len;
 			while ((len = output.read(buffer)) > 0) {
 				buffer[len] = '\0';
-				result += (string)buffer;
+				if (result == null)
+					result = (string)buffer;
+				else
+					result += (string)buffer;
 			}
+			test = test_push_swap(ref av, ref result);
 			pid.wait();
+
 		} catch (Error e) {
 			printerr(e.message);
 		}
@@ -97,9 +133,23 @@ async int run_push_swap(int power) {
 		return result; 
 	});
 	yield;
-	return count_line(thread.join());
+	return PushSwap(count_line(thread.join()), test);
 }
 
+struct PushSwap {
+	int count_line;
+	bool status;
+	PushSwap(int count, bool status) {
+		this.count_line = count;
+		this.status = status;
+	}
+	public void print_status() {
+			if (this.status)
+			stdout.printf("\033[31m[OK]\033[0m ");
+		else
+			stdout.printf("\033[32m[KO]\033[0m ");
+	}
+}
 
 async int []exec_all_push_swap(int nbr, int power) {
 	uint begin = 0;
@@ -110,9 +160,10 @@ async int []exec_all_push_swap(int nbr, int power) {
 		begin++;
 		Idle.add(() => {
 			run_push_swap.begin(power, (obj, res)=> {
-				var nb_hit = run_push_swap.end(res);
-				result += nb_hit;
-				print_line(power, nb_hit, "Nombre de coups : ");
+				var pushswap = run_push_swap.end(res);
+				result += pushswap.count_line;
+				pushswap.print_status();
+				print_line(power, pushswap.count_line, "Nombre de coups : ");
 				begin--;
 			});
 			return false;
