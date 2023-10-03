@@ -81,7 +81,7 @@ async int run_push_swap(int power) {
 		var tab = ft_get_random_tab(power + 1);
 		var av = ft_tab_to_string(tab);
 		try {
-			var pid = new Subprocess.newv({"push_swap", @"$av"}, SubprocessFlags.STDOUT_PIPE);
+			var pid = new Subprocess.newv({@"$push_swap_emp", @"$av"}, SubprocessFlags.STDOUT_PIPE);
 			var output = pid.get_stdout_pipe();
 			uint8 buffer[32768] = {};
 			size_t len;
