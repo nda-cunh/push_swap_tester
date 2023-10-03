@@ -1,7 +1,10 @@
 NAME    =   tester_push_swap
+SRC= main.vala moy.vala
+LIB = --pkg=posix --pkg=gio-2.0 
+CFLAGS= -X -w -X -O2
 
 all:
-	valac -g main.vala moy.vala --pkg=posix --pkg=gio-2.0 -X -w --vapidir=./vapi -o ${NAME} 
+	valac -g $(SRC) $(LIB) $(CFLAGS) -o ${NAME} 
 	@echo "\033[92;1;5m[tester_push_swap]\033[0m Correctly created"
 
 clean:  
