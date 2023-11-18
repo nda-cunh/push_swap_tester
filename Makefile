@@ -1,9 +1,11 @@
 NAME    =   tester_push_swap
 SRC= main.vala moy.vala
 LIB = --pkg=posix --pkg=gio-2.0 
-CFLAGS= -X -w -X -O2
+CFLAGS= -g -X -w -X -O2
 
-all:
+all: $(NAME)
+
+$(NAME): $(SRC)
 	valac -g $(SRC) $(LIB) $(CFLAGS) -o ${NAME} 
 	@echo "\033[92;1;5m[tester_push_swap]\033[0m Correctly created"
 

@@ -14,7 +14,7 @@ int[] ft_get_random_tab(int size)
     
     for (var i = 0; i != size; ++i)
     {
-        n = rand.int_range(int.MIN, int.MAX);
+        n = rand.int_range(-10000, 10000);
         if (n in tab)
             --i;
         else
@@ -31,16 +31,18 @@ string ft_tab_to_string(int []tab)
     return(str);
 }
 
-int count_line(char *s) {
-	var i = 0;
-	var n = 0;
+[CCode (cname = "strchr", cheader_filename = "string.h")]
+extern char *strchr(char *s, int c);
 
-	while (s[i] != '\0') {
-		if (s[i] == '\n')
-			++n;
-		++i;
+int count_line(string s) {
+	unowned string? token = s;
+	int nb = 0;
+
+	while ((token = (string)strchr(token, '\n')) != null) {
+		token = token.offset(1);
+		++nb;
 	}
-	return n;
+	return nb;
 }
 
 void print_line(int power, int nbr, string msg) {
@@ -71,10 +73,13 @@ void print_line(int power, int nbr, string msg) {
 			stdout.printf("%s %s%d\033[0m\n", msg, RED, nbr); 
 	}
 	else
-		stdout.printf("%s \033[37m%d033[0m\n", msg, nbr);
+		stdout.printf("%s %d\n", msg, nbr);
 }
 
-bool test_push_swap(ref string av, ref string input) {
+bool test_push_swap(ref string av, ref string? input) {
+	if (input == null) {
+		return false;
+	}
 	try {
 		uint8 buffer[16];
 		size_t len = 0;
@@ -93,7 +98,7 @@ bool test_push_swap(ref string av, ref string input) {
 		out.close();
 		
 		pid.wait();
-		if ((string)buffer == "OK")
+		if (((string)buffer).has_prefix("OK"))
 			return true;
 		return false;
 	}
@@ -107,10 +112,10 @@ bool test_push_swap(ref string av, ref string input) {
 // worker
 async PushSwap run_push_swap(int power) {
 	bool test = false;
+	var tab = ft_get_random_tab(power + 1);
+	var av = ft_tab_to_string(tab);
 	var thread = new Thread<string?>("async moyenne", () => {
 		string? result = null;
-		var tab = ft_get_random_tab(power + 1);
-		var av = ft_tab_to_string(tab);
 		try {
 			var pid = new Subprocess.newv({push_swap_emp, av}, SubprocessFlags.STDOUT_PIPE);
 			var output = pid.get_stdout_pipe();
@@ -133,21 +138,25 @@ async PushSwap run_push_swap(int power) {
 		return result; 
 	});
 	yield;
-	return PushSwap(count_line(thread.join()), test);
+	string ?result = thread.join();
+	return PushSwap(count_line(result ?? "\n"), test, av);
 }
 
 struct PushSwap {
 	int count_line;
 	bool status;
-	PushSwap(int count, bool status) {
+	string av;
+
+	PushSwap(int count, bool status, string av) {
 		this.count_line = count;
 		this.status = status;
+		this.av = av;
 	}
 	public void print_status() {
-			if (this.status)
-			stdout.printf("\033[31m[OK]\033[0m ");
+		if (this.status)
+			stdout.printf("\033[32m[OK]\033[0m ");
 		else
-			stdout.printf("\033[32m[KO]\033[0m ");
+			stdout.printf("\033[31m[KO] {%s}\033[0m ", av);
 	}
 }
 
@@ -181,23 +190,6 @@ async int []exec_all_push_swap(int nbr, int power) {
 	return result;
 }
 
-// main of moy.vala
-void calc_moy(string []args) {
-    var power = args[1] != null ? int.parse(args[1]) : 10;
-    var nbr = args.length > 2 ? int.parse(args[2]) : 10;
-
-	var loop = new MainLoop();
-	Idle.add(() => {
-		exec_all_push_swap.begin(nbr, power, (obj, res)=> {
-			var tab = exec_all_push_swap.end(res);
-			print_result(power, tab);
-			loop.quit();
-		});
-		return false;
-	});
-	loop.run();
-}
-
 void print_result(int power, int []tab) {
 	var moyenne = 0;
 	var min = int.MAX;
@@ -214,4 +206,25 @@ void print_result(int power, int []tab) {
 	print_line(power, moyenne, "[Moyenne]: ");
 	print_line(power, max, "[Max]:     ");
 	print_line(power, min, "[Min]:     ");
+}
+
+// main of moy.vala
+void calc_moy(string []args) {
+    var power = args[1] != null ? int.parse(args[1]) : 10;
+    var nbr = args.length > 2 ? int.parse(args[2]) : 10;
+
+	if (power >= 3000) {
+		error("Max of tester_pushwap is %d / 3000", power);
+	}
+
+	var loop = new MainLoop();
+	Idle.add(() => {
+		exec_all_push_swap.begin(nbr, power, (obj, res)=> {
+			var tab = exec_all_push_swap.end(res);
+			print_result(power, tab);
+			loop.quit();
+		});
+		return false;
+	});
+	loop.run();
 }
