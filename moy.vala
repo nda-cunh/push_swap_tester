@@ -14,7 +14,7 @@ int[] ft_get_random_tab(int size)
     
     for (var i = 0; i != size; ++i)
     {
-        n = rand.int_range(-10000, 10000);
+        n = rand.int_range(0, 20000);
         if (n in tab)
             --i;
         else
