@@ -201,8 +201,14 @@ void calc_moy(string []args) {
     var power = args[1] != null ? int.parse(args[1]) : 10;
     var nbr = args.length > 2 ? int.parse(args[2]) : 10;
 
-	if (power >= 3000) {
-		error("Max of tester_pushwap is %d / 3000", power);
+	if (power >= 3000 || power <= 0) {
+		printerr("[Error]: Max of tester_pushwap is %d / 3000\n", power);
+		return ;
+	}
+	
+	if (nbr <= 0) {
+		printerr("[Error]: can't iterate %d time\n", nbr);
+		return ;
 	}
 
 	var loop = new MainLoop();
