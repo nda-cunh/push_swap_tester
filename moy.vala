@@ -117,20 +117,8 @@ async PushSwap run_push_swap(int power) {
 	var thread = new Thread<string?>("async moyenne", () => {
 		string? result = null;
 		try {
-			var pid = new Subprocess.newv({push_swap_emp, av}, SubprocessFlags.STDOUT_PIPE);
-			var output = pid.get_stdout_pipe();
-			uint8 buffer[65536] = {};
-			size_t len;
-			while ((len = output.read(buffer)) > 0) {
-				buffer[len] = '\0';
-				if (result == null)
-					result = (string)buffer;
-				else
-					result += (string)buffer;
-			}
+			Process.spawn_sync(null, {push_swap_emp, av}, null, 0, null, out result);
 			test = test_push_swap(ref av, ref result);
-			pid.wait();
-
 		} catch (Error e) {
 			printerr(e.message);
 		}
@@ -219,7 +207,7 @@ void calc_moy(string []args) {
 
 	var loop = new MainLoop();
 	Idle.add(() => {
-		exec_all_push_swap.begin(nbr, power, (obj, res)=> {
+		exec_all_push_swap.begin(nbr, power - 1, (obj, res)=> {
 			var tab = exec_all_push_swap.end(res);
 			print_result(power, tab);
 			loop.quit();
