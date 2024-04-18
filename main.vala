@@ -193,7 +193,6 @@ void test(string[] arg, bool compare)
 			printf("\033[1;32mOK \033[0m");
 		else
 			printf("\033[1;31mKO [ %s] \033[0m", tab);
-	
 	}
 	else
 	{
@@ -257,77 +256,72 @@ void test(string[] arg, bool compare)
 	}
 }
 
+/* change string[] to string */
 string tab_to_string(string[] tab)
 {
-	var str = "";
-	foreach (var i in tab)
-		str += @"\"$i\" ";
-	return (str);
+	var str = new StringBuilder.sized(tab.length * 5);
+	foreach (var i in tab) {
+		str.append_c('\"');
+		str.append(i);
+		str.append("\" ");
+	}
+	return ((owned)str.str);
 }
 
 int main(string []args)
 {
-	var FD_PUSH = FileStream.open("push_swap", "r");
-
-	if (FD_PUSH == null)
-	{
-		printf("\033[96;1m [INFO] \033[0m push_swap not found \n");
-		FD_PUSH = FileStream.open("../push_swap", "r");
+	/* Search the good path of push_swap */
+	if (FileUtils.test("./push_swap", FileTest.EXISTS) == false) {
+		printf("\033[96;1m [INFO] \033[0m ./push_swap not found \n");
 		printf("\033[96;1m [INFO] \033[0m recherche de push_swap  ../push_swap\n");
-		if (FD_PUSH == null)
-		{
+		if (FileUtils.test("../push_swap", FileTest.EXISTS) == false) {
 			printf("\033[96;1m [INFO] \033[0m ../push_swap not found \n");
 			return(-1);
 		}
 		else
-		{
 			push_swap_emp = "../push_swap";
-			Posix.chmod("../push_swap", S_IRWXU);
-		}
 	}
-
-	if (push_swap_emp == null)
-	{
+	else
 		push_swap_emp = "./push_swap";
-		Posix.chmod("push_swap", S_IRWXU);
-	}
-	var FD_CHECKER = FileStream.open("./checker_linux", "r");
+	Posix.chmod(push_swap_emp, S_IRWXU);
 
-	if (FD_CHECKER == null)
-	{
+	/* Search the good path of push_swap */
+	if (FileUtils.test("./checker_linux", FileTest.EXISTS) == false) {
 		Posix.system("wget -c https://cdn.intra.42.fr/document/document/24664/checker_linux -q --show-progress");
 		Posix.chmod("checker_linux", S_IRWXU);
 		printf("\n");
 	}
-	FD_CHECKER = FileStream.open("./checker_linux", "r");
-	if (FD_CHECKER == null)
-	{
+	if (FileUtils.test("./checker_linux", FileTest.EXISTS) == false) {
 		printf("[ERROR]: checker_linux non trouvée.\n");
 		return (1);
 	}
 	Posix.chmod("checker_linux", S_IRWXU);
-	if (args[1] == "help" || args[1] == "-h"){
-		printf("\n[HELP]\n");
-		printf("tester_push_swap [true|false|leak|valgrind| puissance(int)] [iteration(int)] \n");
-		return (0);
+
+	
+	/* ARGV main */
+	g_only = ALL;
+	if (args.length > 1) {
+		if (args[1] == "help" || args[1] == "-h"){
+			printf("\n[Help]\ntester_push_swap [true|false|leak|valgrind| puissance(int)] [iteration(int)] \n");
+			return (0);
+		}
+		if (args[1] == "leak" || args[1] == "valgrind"){
+			g_only = MEMORY_LEAK;
+			list_test();
+			return (0);
+		}
+		if (args[1] == "true"){
+			g_only = TRUE;
+			list_test();
+			return (0);
+		}
+		if (args[1] == "false"){
+			g_only = FALSE;
+			list_test();
+			return (0);
+		}
 	}
-	if (args[1] == "leak" || args[1] == "valgrind"){
-		g_only = MEMORY_LEAK;
-		list_test();
-		return (0);
-	}
-	if (args[1] == "true"){
-		g_only = TRUE;
-		list_test();
-		return (0);
-	}
-	if (args[1] == "false"){
-		g_only = FALSE;
-		list_test();
-		return (0);
-	}
-	else
-		g_only = ALL;
+
 	if (args.length == 1)
 		list_test();
 	else
