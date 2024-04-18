@@ -96,6 +96,12 @@ void list_test()
 	test({"12          "}, true);
 	test({"454845456689864", "5455464454545"}, false);
 
+	// bdany - ppuivif
+    test({"1", "0", " "}, false);
+    test({" ", "2", "1"}, false);
+    test({"4", " ", "3"}, false);
+    test({"", "4", "2"}, false); 
+
 }
 
 void test(string[] arg, bool compare)
