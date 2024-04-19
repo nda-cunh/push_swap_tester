@@ -3,11 +3,11 @@ using Posix;
 public string push_swap_emp;
 ONLY g_only = ALL;
 
-enum ONLY{
+enum ONLY {
 	ALL, TRUE, FALSE, MEMORY_LEAK
 }
 
-void list_test()
+void list_test() throws Error
 {
 	/* TRUE = GOOD  */
 	/* FALSE = ERROR */
@@ -88,155 +88,68 @@ void list_test()
     test({" ", "2", "1"}, false);
     test({"4", " ", "3"}, false);
     test({"", "4", "2"}, false); 
-
 }
 
-string ft_getline(int fd)
-{
-	var res = "";
-	char b = '0';
-
-	while (read(fd, &b, 1) > 0)
-	{
-		res += @"$b";
-		if(b == '\n')
-			return (res);
-	}
-	return (res);
-}
-
-
-void test(string[] arg, bool compare)
+void test(string[] arg, bool compare) throws Error
 {
 	var tab = tab_to_string(arg);
+	string []argvp;
+	string output;
+	string errput;
+	int wait_status;
 
+	/* Memory Part */
 	if (g_only == MEMORY_LEAK)
 	{
-		string output;
-		string errput;
-		int malloc = 0;
-		int free = 0;
-		Process.spawn_sync(null, {"valgrind", push_swap_emp, tab}, null, SEARCH_PATH, null, out output, out errput);
+		int malloc = -42;
+		int free = 666;
+		argvp = {"valgrind", push_swap_emp};
+		foreach(var i in arg)
+			argvp += i;
+		Process.spawn_sync(null, argvp, null, SEARCH_PATH, null, out output, out errput);
 		foreach (var line in errput.split("\n")) {
-			print("%s\n", line);
 			if ("total heap usage:" in line) {
 				unowned string begin = line.offset (line.index_of_char(':'));
-				// printerr(">%s\n\n", begin);
 				begin.scanf(": %d allocs, %d frees", out malloc, out free);
 				break ;
 			}
 		}
 		if (malloc == free)
-			printf(@"\033[1;32m[MOK]:$(GREEN) %d malloc, %d free$(NONE)\n", malloc, free);
+			printf("\033[1;32m[MOK]:\033[1;92m %d malloc, %d free\033[0m\n", malloc, free);
 		else
-			printf(@"$(RED)[MKO]: %d malloc , %d free { $(tab)}$(NONE)\n", malloc, free);
+			printf("\033[1;31m[MKO]: %d malloc , %d free { %s}\033[0m\n", malloc, free, tab);
 		return ;
 	}
 
-
-	if (compare == false)
+	/* Part for FALSE test*/
+	if (compare == false && g_only != TRUE)
 	{
-		if (g_only == TRUE)
-			return ;
-		int fds_out[2];
-		int fds_err[2];
-		pipe(fds_err);
-		pipe(fds_out);
-
-		var pid = fork();
-		if (pid == 0)
-		{
-			string []av = {"push_swap"};
-			foreach(var i in arg)
-				av += i;
-
-			close(fds_out[0]);
-			close(fds_err[0]);
-			dup2(fds_out[1], 1);
-			dup2(fds_err[1], 2);
-			execvp(push_swap_emp, av);
-			close(fds_out[1]);
-			close(fds_err[1]);
-			exit(0);
-		}
-		waitpid(pid, null, 0);
-		close(fds_out[1]);
-		close(fds_err[1]);
-	
-		var sout = FileStream.fdopen(fds_out[0], "r");
-		var s1 = sout.read_line();
-		
-		var serr = FileStream.fdopen(fds_err[0], "r");
-		var s2 = serr.read_line();
-		
-		close(fds_out[0]);
-		close(fds_err[0]);
-		
-
-		if (s2 == "Error" && s1 == null)
+		Process.spawn_command_line_sync(@"$push_swap_emp $tab", out output, out errput, out wait_status);
+		if (errput == "Error\n" && output == "")
 			printf("\033[1;32mOK \033[0m");
 		else
 			printf("\033[1;31mKO [ %s] \033[0m", tab);
 	}
-	else
-	{
-		if (g_only == FALSE)
-			return ;
-		string []av = {"push_swap"};
-		foreach(var i in arg)
-			av += @"$i";
-		int fds_push_swap_out[2];
+	/* Part for TRUE test*/
+	else if (compare == true && g_only != FALSE){
+		string? contents = null;
+		int fd_out;
+		int fd;
 
-		pipe(fds_push_swap_out);
-		{var pid = fork();
-		if(pid == 0)
-		{
-			close(fds_push_swap_out[0]);
-			dup2(fds_push_swap_out[1], 1);
-			
-			close(2);
-			execvp(@"$(push_swap_emp)", av);
-			
-			close(fds_push_swap_out[1]);
-			exit(0);
-		}
-		waitpid(pid, null, 0);}
-		close(fds_push_swap_out[1]);
-		int fds_out_checker[2];
-		pipe(fds_out_checker);
+		Shell.parse_argv(@"$push_swap_emp $tab", out argvp);
+		Process.spawn_async_with_pipes(null, argvp, null, SEARCH_PATH, null, null, null, out fd, null);
+		Shell.parse_argv(@"./checker_linux $tab", out argvp);
+		Process.spawn_async_with_pipes_and_fds (null, argvp, null, SEARCH_PATH, null, fd, -1, -1, {}, {}, null, null, out fd_out, null);
+
+		var stream = new IOChannel.unix_new (fd_out);
+		stream.read_to_end(out contents, null);
 		
-		var pid = fork();
-		if(pid == 0)
-		{
-			close(fds_push_swap_out[1]);
-			close(fds_out_checker[0]);
-			
-			dup2(fds_out_checker[1], 1);
-			dup2(fds_push_swap_out[0], 0);
-			close(2);
-			string []av2 = {"checker_linux"};
-			foreach(var i in arg)
-				av2 += @"$i";
-			execvp("./checker_linux", av2);
-			
-			close(fds_push_swap_out[0]);
-			close(fds_out_checker[1]);
-			exit(0);
-		}
-		waitpid(pid, null, 0);
-		close(fds_push_swap_out[0]);
-		close(fds_out_checker[1]);
-
-		var FD_OUT = FileStream.fdopen(fds_out_checker[0], "r");
-		var str = FD_OUT.read_line();
-		if (str != null && "OK" in str)
+		if (contents != null && "OK" in contents)
 			printf("\033[1;32mOK \033[0m");
-		else if (str != null && "KO" in str)
+		else if (contents != null && "KO" in contents)
 			printf("\033[1;31mKO [ %s] \033[0m", tab);
 		else
 			printf("\033[1;31mKO [ %s] \033[0m", tab);
-		/* printf("\033[1;31m ERROR [ %s & %s] \033[0m", tab, str); */
-		close(fds_out_checker[0]);
 	}
 }
 
@@ -250,6 +163,29 @@ string tab_to_string(string[] tab)
 		str.append("\" ");
 	}
 	return ((owned)str.str);
+}
+
+void argument_option (string []args) throws Error {
+	/* ARGV main */
+	g_only = ALL;
+	if (args.length > 1) {
+		if (args[1] == "help" || args[1] == "-h")
+			printf("\n[Help]\ntester_push_swap [true|false|leak|valgrind| puissance(int)] [iteration(int)] \n");
+		else if (args[1] == "leak" || args[1] == "valgrind")
+			g_only = MEMORY_LEAK;
+		else if (args[1] == "true")
+			g_only = TRUE;
+		else if (args[1] == "false")
+			g_only = FALSE;
+		if (g_only != ALL) {
+			list_test();
+			return ;
+		}
+	}
+	if (args.length == 1)
+		list_test();
+	else
+		calc_moy(args);
 }
 
 int main(string []args)
@@ -281,34 +217,11 @@ int main(string []args)
 	}
 	Posix.chmod("checker_linux", S_IRWXU);
 
-	
-	/* ARGV main */
-	g_only = ALL;
-	if (args.length > 1) {
-		if (args[1] == "help" || args[1] == "-h"){
-			printf("\n[Help]\ntester_push_swap [true|false|leak|valgrind| puissance(int)] [iteration(int)] \n");
-			return (0);
-		}
-		if (args[1] == "leak" || args[1] == "valgrind"){
-			g_only = MEMORY_LEAK;
-			list_test();
-			return (0);
-		}
-		if (args[1] == "true"){
-			g_only = TRUE;
-			list_test();
-			return (0);
-		}
-		if (args[1] == "false"){
-			g_only = FALSE;
-			list_test();
-			return (0);
-		}
+	try {
+		argument_option(args);
+	} catch (Error e) {
+		printerr(e.message);
+		return -1;
 	}
-
-	if (args.length == 1)
-		list_test();
-	else
-		calc_moy(args);
-	return (0);
+	return 0;
 }
