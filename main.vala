@@ -1,25 +1,12 @@
 using Posix;
 
-string ft_getline(int fd)
-{
-	var res = "";
-	char b = '0';
-
-	while (read(fd, &b, 1) > 0)
-	{
-		res += @"$b";
-		if(b == '\n')
-			return (res);
-	}
-	return (res);
-}
-
 public string push_swap_emp;
+ONLY g_only = ALL;
 
 enum ONLY{
 	ALL, TRUE, FALSE, MEMORY_LEAK
 }
-ONLY g_only = ALL;
+
 void list_test()
 {
 	/* TRUE = GOOD  */
@@ -104,6 +91,21 @@ void list_test()
 
 }
 
+string ft_getline(int fd)
+{
+	var res = "";
+	char b = '0';
+
+	while (read(fd, &b, 1) > 0)
+	{
+		res += @"$b";
+		if(b == '\n')
+			return (res);
+	}
+	return (res);
+}
+
+
 void test(string[] arg, bool compare)
 {
 	var tab = tab_to_string(arg);
@@ -164,13 +166,13 @@ void test(string[] arg, bool compare)
 		{
 			string []av = {"push_swap"};
 			foreach(var i in arg)
-				av += @"$i";
+				av += i;
 
 			close(fds_out[0]);
 			close(fds_err[0]);
 			dup2(fds_out[1], 1);
 			dup2(fds_err[1], 2);
-			execvp(@"$(push_swap_emp)", av);
+			execvp(push_swap_emp, av);
 			close(fds_out[1]);
 			close(fds_err[1]);
 			exit(0);
