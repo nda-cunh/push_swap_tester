@@ -14,6 +14,6 @@ clean:
 	@echo "\033[93;1;5m[tester_push_swap]\033[0m Correctly deleted"
 
 run: all
-	@./tester_push_swap 100 10
+	@./tester_push_swap leak
 
 re:	clean all
