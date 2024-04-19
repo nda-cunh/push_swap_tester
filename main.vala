@@ -112,42 +112,24 @@ void test(string[] arg, bool compare)
 
 	if (g_only == MEMORY_LEAK)
 	{
-		string []av = { "valgrind", @"$(push_swap_emp)"};
-		string []split_line = null;
-		string line = null;
-		string x = null;
-		string y = null;
-		int fds[2];
-		
-		pipe(fds);
-		var pid = fork();
-		if(pid == 0)
-		{
-			foreach(var i in arg)
-				av += @"$i";
-			close(fds[0]);
-			close(1);
-			dup2(fds[1], 2);
-			execvp("/bin/valgrind", av);
-			close(fds[1]);
-		}
-		waitpid(pid, null, 0);
-		close(fds[1]);
-		do{
-			line = ft_getline(fds[0]);
-			if (line != null && "total" in line)
-			{
-				split_line = line.split(" ");
+		string output;
+		string errput;
+		int malloc = 0;
+		int free = 0;
+		Process.spawn_sync(null, {"valgrind", push_swap_emp, tab}, null, SEARCH_PATH, null, out output, out errput);
+		foreach (var line in errput.split("\n")) {
+			print("%s\n", line);
+			if ("total heap usage:" in line) {
+				unowned string begin = line.offset (line.index_of_char(':'));
+				// printerr(">%s\n\n", begin);
+				begin.scanf(": %d allocs, %d frees", out malloc, out free);
 				break ;
 			}
-		}while (line != null);
-		x = split_line[6];
-		y = split_line[8];
-		if(x == y)
-			printf(@"\033[1;32m[MOK]:$(GREEN) $x malloc, $y free$(NONE)\n");
+		}
+		if (malloc == free)
+			printf(@"\033[1;32m[MOK]:$(GREEN) %d malloc, %d free$(NONE)\n", malloc, free);
 		else
-			printf(@"$(RED)[MKO]: $x malloc , $y free { $(tab)}$(NONE)\n");
-		close(fds[0]);
+			printf(@"$(RED)[MKO]: %d malloc , %d free { $(tab)}$(NONE)\n", malloc, free);
 		return ;
 	}
 
