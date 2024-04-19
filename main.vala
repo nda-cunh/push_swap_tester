@@ -1,12 +1,15 @@
 using Posix;
 
+/* where is the push_swap default to "./push_swap" */
 public string push_swap_emp;
-ONLY g_only = ALL;
+Mode g_mode = ALL;
 
-enum ONLY {
+/* mode of the tester */
+enum Mode {
 	ALL, TRUE, FALSE, MEMORY_LEAK
 }
 
+/* All test you can add some test here */
 void list_test() throws Error
 {
 	/* TRUE = GOOD  */
@@ -90,6 +93,7 @@ void list_test() throws Error
     test({"", "4", "2"}, false); 
 }
 
+/* Run test take a array like {"5", "12", "3"} and print result */
 void test(string[] arg, bool compare) throws Error
 {
 	var tab = tab_to_string(arg);
@@ -99,7 +103,7 @@ void test(string[] arg, bool compare) throws Error
 	int wait_status;
 
 	/* Memory Part */
-	if (g_only == MEMORY_LEAK)
+	if (g_mode == MEMORY_LEAK)
 	{
 		int malloc = -42;
 		int free = 666;
@@ -122,7 +126,7 @@ void test(string[] arg, bool compare) throws Error
 	}
 
 	/* Part for FALSE test*/
-	if (compare == false && g_only != TRUE)
+	if (compare == false && g_mode != TRUE)
 	{
 		Process.spawn_command_line_sync(@"$push_swap_emp $tab", out output, out errput, out wait_status);
 		if (errput == "Error\n" && output == "")
@@ -131,7 +135,7 @@ void test(string[] arg, bool compare) throws Error
 			printf("\033[1;31mKO [ %s] \033[0m", tab);
 	}
 	/* Part for TRUE test*/
-	else if (compare == true && g_only != FALSE){
+	else if (compare == true && g_mode != FALSE){
 		string? contents = null;
 		int fd_out;
 		int fd;
@@ -167,17 +171,17 @@ string tab_to_string(string[] tab)
 
 void argument_option (string []args) throws Error {
 	/* ARGV main */
-	g_only = ALL;
+	g_mode = ALL;
 	if (args.length > 1) {
 		if (args[1] == "help" || args[1] == "-h")
 			printf("\n[Help]\ntester_push_swap [true|false|leak|valgrind| puissance(int)] [iteration(int)] \n");
 		else if (args[1] == "leak" || args[1] == "valgrind")
-			g_only = MEMORY_LEAK;
+			g_mode = MEMORY_LEAK;
 		else if (args[1] == "true")
-			g_only = TRUE;
+			g_mode = TRUE;
 		else if (args[1] == "false")
-			g_only = FALSE;
-		if (g_only != ALL) {
+			g_mode = FALSE;
+		if (g_mode != ALL) {
 			list_test();
 			return ;
 		}
