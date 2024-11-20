@@ -197,22 +197,83 @@ private bool search_path (string path) {
 	return (FileUtils.test(path, FileTest.EXISTS) && !FileUtils.test(path, FileTest.IS_DIR));
 }
 
+
+public class Config {
+
+	public void parse(string[] args) throws Error {
+		var context = new GLib.OptionContext("[(true|false) | (leak|valgrind) | (puissance [iteration])]");
+		context.set_help_enabled(true);
+		context.set_ignore_unknown_options(true);
+		context.add_main_entries(options, null);
+		context.set_description("""
+%3$s42 push_swap tester in vala%2$s
+
+%1$sMode:%2$s :
+  %3$sParsing:%2$s
+  - true : test only the good input
+  - false : test only the bad input
+  
+  %3$sMemory:%2$s
+  - leak or valgrind: test the memory leak
+  
+  %3$sPerformance:%2$s
+  - puissance : test the puissance of the tester
+  - iteration : test the iteration of the tester
+  %1$sex%2$s: tester_push_swap 500 1000
+  	it will test 1000 push_swap with 500 numbers each 
+
+%1$sExample:%2$s
+
+%4$s# Test the parsing%2$s
+./tester_push_swap true
+./tester_push_swap false
+
+%4$s# Test the memory leak%2$s
+./tester_push_swap leak
+
+%4$s# Test the performance%2$s
+./tester_push_swap 100
+./tester_push_swap 500 
+./tester_push_swap 100 1000
+
+
+""".printf("\033[34;1m", "\033[0m", "\033[33;1m", "\033[32;1m"));
+		context.parse(ref args);
+	}
+
+	private const GLib.OptionEntry[] options = {
+		{ "path", '\0', OptionFlags.NONE, OptionArg.STRING, ref push_swap_emp, "The Path of the push_swap executable", "push_swap" },
+		{ null }
+	};
+}
+
 async int main(string []args)
 {
-	/* Search the good path of push_swap */
-	string []paths_push_swap = {"./push_swap", "../push_swap", "../push_swap/push_swap"};
+	var config = new Config();
+	config.parse(args);
 
-	printf("\033[96;1m[INFO] search ");
-	foreach (unowned var path in paths_push_swap) {
-		if (search_path(path) == true) {
-			push_swap_emp = path;
-			break ;
-		}
-	}
-	printf("\033[0m\n");
+
 	if (push_swap_emp == null) {
-		printf("\033[96;1m [INFO] \033[0m ../push_swap not found \n");
+		/* Search the good path of push_swap */
+		string []paths_push_swap = {"./push_swap", "../push_swap", "../push_swap/push_swap"};
+
+		printf("\033[96;1m[INFO] search ");
+		foreach (unowned var path in paths_push_swap) {
+			if (search_path(path) == true) {
+				push_swap_emp = path;
+				break ;
+			}
+		}
+		printf("\033[0m\n");
+	}
+	if (push_swap_emp == null ) {
+		printf("\033[96;1m[INFO] \033[0m ../push_swap not found \n");
 		return(-1);
+	}
+	if (FileUtils.test(push_swap_emp, FileTest.EXISTS) == false) 
+	{
+		printf("\033[31m[ERROR]: \033[91m%s non trouvée.\n", push_swap_emp);
+		return (1);
 	}
 	FileUtils.chmod(push_swap_emp, 0755);
 
