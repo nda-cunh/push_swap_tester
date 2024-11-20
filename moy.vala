@@ -4,9 +4,10 @@ const string BLUE = "\033[1;36m";
 const string YELLOW = "\033[1;93m";
 const string ORANGE = "\033[1;91m";
 const string RED = "\033[1;31m";
+const string WHITE = "\033[1;37m";
 const string NONE = "\033[0m";
 
-int[] ft_get_random_tab(int size)
+private int[] ft_get_random_tab(int size)
 {
     var tab = new int[size];
     var n = 0;
@@ -23,181 +24,191 @@ int[] ft_get_random_tab(int size)
     return (tab);
 }
 
-string ft_tab_to_string(int []tab)
-{
-    var str = "";
-    foreach (var i in tab)
-        str += i.to_string() + " ";
-    return(str);
-}
+class PushSwap {
+	public int[] tab_input;
+	public string output;
+	public string output_checker;
+	public int count;
+	string []argv;
 
-[CCode (cname = "strchr", cheader_filename = "string.h")]
-extern char *strchr(char *s, int c);
-
-int count_line(string s) {
-	unowned string? token = s;
-	int nb = 0;
-
-	while ((token = (string)strchr(token, '\n')) != null) {
-		token = token.offset(1);
-		++nb;
-	}
-	return nb;
-}
-
-void print_line(int power, int nbr, string msg) {
-	if (power <= 100)
-	{
-		if (nbr < 700)
-			stdout.printf("%s %s%d\033[0m\n", msg, GREEN, nbr); 
-		else if (nbr < 900)
-			stdout.printf("%s %s%d\033[0m\n", msg, BLUE, nbr); 
-		else if (nbr < 1100)
-			stdout.printf("%s %s%d\033[0m\n", msg, YELLOW, nbr); 
-		else if (nbr < 1500)
-			stdout.printf("%s %s%d\033[0m\n", msg, ORANGE, nbr); 
-		else
-			stdout.printf("%s %s%d\033[0m\n", msg, RED, nbr); 
-	}
-	else if (power <= 500)
-	{
-		if (nbr < 5500)
-			stdout.printf("%s %s%d\033[0m\n", msg, GREEN, nbr); 
-		else if (nbr < 7000)
-			stdout.printf("%s %s%d\033[0m\n", msg, BLUE, nbr); 
-		else if (nbr < 8500)
-			stdout.printf("%s %s%d\033[0m\n", msg, YELLOW, nbr); 
-		else if (nbr < 11500)
-			stdout.printf("%s %s%d\033[0m\n", msg, ORANGE, nbr); 
-		else
-			stdout.printf("%s %s%d\033[0m\n", msg, RED, nbr); 
-	}
-	else
-		stdout.printf("%s %d\n", msg, nbr);
-}
-
-bool test_push_swap(ref string av, ref string? input) {
-	if (input == null) {
-		return false;
-	}
-	try {
-		uint8 buffer[16];
-		size_t len = 0;
-		var pid = new Subprocess.newv({"./checker_linux", av}, SubprocessFlags.STDOUT_PIPE | SubprocessFlags.STDIN_PIPE);
-
-		var @in = pid.get_stdin_pipe();
-		var @out = pid.get_stdout_pipe();
-
-		// read all input pipe
-		in.write_all(input.data, out len);
-		in.close();
-		
-		// write all output pipe
-		out.read_all(buffer, out len);
-		buffer[len] = '\0';
-		out.close();
-		
-		pid.wait();
-		if (((string)buffer).has_prefix("OK"))
-			return true;
-		return false;
-	}
-	catch(Error e) {
-		printerr("%s\n", e.message);
-	}
-	return false;
-}
-
-
-// worker
-async PushSwap run_push_swap(int power) {
-	bool test = false;
-	var tab = ft_get_random_tab(power + 1);
-	var av = ft_tab_to_string(tab);
-	var thread = new Thread<string?>("async moyenne", () => {
-		string? result = null;
-		try {
-			Process.spawn_sync(null, {push_swap_emp, av}, null, 0, null, out result);
-			test = test_push_swap(ref av, ref result);
-		} catch (Error e) {
-			printerr(e.message);
+	PushSwap(int power) {
+		tab_input = ft_get_random_tab (power);
+		foreach (unowned var i in tab_input) {
+			argv += i.to_string();
 		}
-		Idle.add(run_push_swap.callback);
-		return result; 
-	});
-	yield;
-	string ?result = thread.join();
-	return PushSwap(count_line(result ?? "\n"), test, av);
-}
-
-struct PushSwap {
-	int count_line;
-	bool status;
-	string av;
-
-	PushSwap(int count, bool status, string av) {
-		this.count_line = count;
-		this.status = status;
-		this.av = av;
+		count = 0;
 	}
-	public void print_status() {
-		if (this.status)
-			stdout.printf("\033[32m[OK]\033[0m ");
+
+	private async int count_me (string output) {
+		int index = 0;
+		while ((index = output.index_of_char ('\n', index + 1)) != -1) {
+			++count;
+		}
+		return (count);
+	}
+
+	private async void run_push_swap_exec () throws Error {
+		var bs = new StrvBuilder();
+		bs.add (push_swap_emp);
+		bs.addv (argv);
+		var proc = new Subprocess.newv (bs.end(), STDOUT_PIPE);
+		yield proc.communicate_utf8_async (null, null, out output, null);
+		count = yield count_me(output);
+	}
+
+	private async void run_checker () throws Error {
+		var bs = new StrvBuilder();
+		bs.add ("./checker_linux");
+		bs.addv (argv);
+		var proc = new Subprocess.newv (bs.end(), STDOUT_PIPE | STDIN_PIPE);
+		yield proc.communicate_utf8_async (output, null, out output_checker, null);
+		output_checker._delimit ("\n", '\0');
+	}
+
+	public static async PushSwap run (int nbr) throws Error {
+		var self = new PushSwap (nbr);
+		yield self.run_push_swap_exec ();
+		yield self.run_checker ();
+
+		return self;
+	}
+	
+	private static void draw_result (PushSwap? new_push_swap = null) {
+		if (new_push_swap != null)
+		{
+			if (max_count < new_push_swap.count)
+				max_count = new_push_swap.count;
+			if (min_count == 0 || min_count > new_push_swap.count)
+				min_count = new_push_swap.count;
+			if (new_push_swap.output_checker == "KO") {
+				error_text += "Argv: [\"%s\"]\n\n".printf(string.joinv ("\" \"", new_push_swap.argv));
+				nbr_ko++;
+			}
+			if (new_push_swap.output_checker == "Error") {
+				error_text += "Argv: [\"%s\"]\n\n".printf(string.joinv ("\" \"", new_push_swap.argv));
+				nbr_err++;
+			}
+			moy_count += new_push_swap.count;
+			print("\033[6A");
+		}
+		double moyenne = moy_count / array.length;
+		double ecart_type = CalculateEcartType(moyenne);
+		print ("\033[35;1mMax: %s%d\n", color(max_count), max_count);
+		print ("\033[35;1mMin: %s%d\n", color(min_count), min_count);
+		print ("\033[34;1mAverage:\033[34;0m %s%g\n", color((int)moyenne), moyenne);
+		print("\033[34;1mstandard deviation:\033[34;0m %g\n", ecart_type);
+		print ("%s | %s\n", (nbr_ko == 0 ? "\033[32;1mKO 0" : @"\033[31;1mKO $nbr_ko"),
+			(nbr_err == 0 ? "\033[32;1mError 0" : "\033[31;1mError %d"));
+		print ("\033[33;1mTest %d / %d\033[0m\n", nbr_test, nbr_max);
+	}
+
+	private static unowned string color (int nb) {
+		if (power <= 100)
+		{
+			if (nb <= 700)
+				return GREEN;
+			else if (nb < 900)
+				return BLUE;
+			else if (nb < 1100)
+				return YELLOW;
+			else if (nb < 1500)
+				return ORANGE;
+			else
+				return RED;
+		}
+		else if (power <= 500)
+		{
+			if (nb < 5500)
+				return RED;
+			else if (nb < 7000)
+				return BLUE;
+			else if (nb < 8500)
+				return YELLOW;
+			else if (nb < 11500)
+				return ORANGE;
+			else
+				return RED;
+		}
 		else
-			stdout.printf("\033[31m[KO] {%s}\033[0m ", av);
+			return WHITE;
 	}
-}
 
-async int []exec_all_push_swap(int nbr, int power) {
-	uint begin = 0;
-	uint max = get_num_processors() * 2;
-	int []result = {};
 
-	for (int i = 0; i < nbr; ++i) {
-		begin++;
-		Idle.add(() => {
-			run_push_swap.begin(power, (obj, res)=> {
-				var pushswap = run_push_swap.end(res);
-				result += pushswap.count_line;
-				pushswap.print_status();
-				print_line(power, pushswap.count_line, "Nombre de coups : ");
-				begin--;
+	private static double CalculateEcartType(double moyenne)
+    {
+        double sumOfSquares = 0;
+        foreach (unowned var value in array) {
+            sumOfSquares += Math.pow(value.count - moyenne, 2);
+        }
+        return Math.sqrt(sumOfSquares / array.length);
+    }
+
+
+	/* Static */
+
+	public static PushSwap []array;
+	public static string error_text;
+	public static int max_count;
+	public static int min_count;
+	public static double moy_count;
+	public static int nbr_max;
+	public static int nbr_test;
+	public static int nbr_ko;
+	public static int nbr_err;
+	public static int power = 0;
+
+	public static async void exec_all_push_swap (int nbr, int power) throws Error {
+		PushSwap.power = power;
+		int job_max = 0;
+		error_text = "";
+		max_count = 0;
+		moy_count = 0;
+		nbr_max = nbr;
+		nbr_test = 0;
+		nbr_ko = 0;
+		nbr_err = 0;
+
+		print ("\033[42m 5 \033[46m 4 \033[103m 3 \033[101m 2 \033[41m 1 \033[0m\n");
+		draw_result (null);
+
+		while (job_max != 0 || nbr != 0) {
+			if (job_max == get_num_processors ()) {
+				Idle.add (exec_all_push_swap.callback, Priority.LOW);
+				yield;
+				continue;
+			}
+			if (nbr == 0) {
+				Idle.add (exec_all_push_swap.callback, Priority.LOW);
+				yield;
+				continue;
+			}
+			job_max++;
+			PushSwap.run.begin(power, (obj, res) => {
+				try {
+					var p = PushSwap.run.end(res);
+					array += p;
+					draw_result (p);
+				}
+				catch (Error e) {
+					printerr("Error: %s\n", e.message);
+				}
+				++nbr_test;
+				job_max--;
 			});
-			return false;
-		});
-		while (begin == max) {
-			Idle.add(exec_all_push_swap.callback);
-			yield;
+			--nbr;
 		}
+		for (int i = 0; i < 6; i++) {
+			print("\033[1A\033[2K");
+		}
+		if (error_text != "") {
+			printerr("\033[91m%s\033[0m", error_text);
+		}
+		draw_result (null);
 	}
-	// Wait all thread
-	while (result.length != nbr) {
-		Idle.add(exec_all_push_swap.callback);
-		yield;
-	}
-	return result;
-}
-
-void print_result(int power, int []tab) {
-	var moyenne = 0;
-	var min = int.MAX;
-	var max = 0;
-	foreach (var i in tab) {
-		if (i > max)
-			max = i;
-		if (i < min)
-			min = i;
-		moyenne += i;
-	}
-	moyenne = moyenne / tab.length;
-	stdout.printf("\n");
-	print_line(power, moyenne, "[Moyenne]: ");
-	print_line(power, max, "[Max]:     ");
-	print_line(power, min, "[Min]:     ");
 }
 
 // main of moy.vala
-void calc_moy(string []args) {
+async void calc_moy(string []args) throws Error {
     var power = args[1] != null ? int.parse(args[1]) : 10;
     var nbr = args.length > 2 ? int.parse(args[2]) : 10;
 
@@ -211,14 +222,5 @@ void calc_moy(string []args) {
 		return ;
 	}
 
-	var loop = new MainLoop();
-	Idle.add(() => {
-		exec_all_push_swap.begin(nbr, power - 1, (obj, res)=> {
-			var tab = exec_all_push_swap.end(res);
-			print_result(power, tab);
-			loop.quit();
-		});
-		return false;
-	});
-	loop.run();
+	yield PushSwap.exec_all_push_swap(nbr, power - 1);
 }

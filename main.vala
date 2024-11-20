@@ -1,7 +1,7 @@
 using Posix;
 
 /* where is the push_swap default to "./push_swap" */
-public string push_swap_emp;
+public string? push_swap_emp = null;
 Mode g_mode = ALL;
 
 /* mode of the tester */
@@ -169,7 +169,7 @@ string tab_to_string(string[] tab)
 	return ((owned)str.str);
 }
 
-void argument_option (string []args) throws Error {
+async void argument_option (string []args) throws Error {
 	/* ARGV main */
 	g_mode = ALL;
 	if (args.length > 1) {
@@ -189,40 +189,46 @@ void argument_option (string []args) throws Error {
 	if (args.length == 1)
 		list_test();
 	else
-		calc_moy(args);
+		yield calc_moy(args);
 }
 
-int main(string []args)
+private bool search_path (string path) {
+	printf("`%s` ", path);
+	return (FileUtils.test(path, FileTest.EXISTS) && !FileUtils.test(path, FileTest.IS_DIR));
+}
+
+async int main(string []args)
 {
 	/* Search the good path of push_swap */
-	if (FileUtils.test("./push_swap", FileTest.EXISTS) == false) {
-		printf("\033[96;1m [INFO] \033[0m ./push_swap not found \n");
-		printf("\033[96;1m [INFO] \033[0m recherche de push_swap  ../push_swap\n");
-		if (FileUtils.test("../push_swap", FileTest.EXISTS) == false) {
-			printf("\033[96;1m [INFO] \033[0m ../push_swap not found \n");
-			return(-1);
+	string []paths_push_swap = {"./push_swap", "../push_swap", "../push_swap/push_swap"};
+
+	printf("\033[96;1m[INFO] search ");
+	foreach (unowned var path in paths_push_swap) {
+		if (search_path(path) == true) {
+			push_swap_emp = path;
+			break ;
 		}
-		else
-			push_swap_emp = "../push_swap";
 	}
-	else
-		push_swap_emp = "./push_swap";
-	Posix.chmod(push_swap_emp, S_IRWXU);
+	printf("\033[0m\n");
+	if (push_swap_emp == null) {
+		printf("\033[96;1m [INFO] \033[0m ../push_swap not found \n");
+		return(-1);
+	}
+	FileUtils.chmod(push_swap_emp, 0755);
 
 	/* Search the good path of push_swap */
 	if (FileUtils.test("./checker_linux", FileTest.EXISTS) == false) {
-		Posix.system("wget -c https://cdn.intra.42.fr/document/document/24664/checker_linux -q --show-progress");
-		Posix.chmod("checker_linux", S_IRWXU);
+		Posix.system("wget -c https://cdn.intra.42.fr/document/document/28256/checker_linux -q --show-progress");
 		printf("\n");
 	}
 	if (FileUtils.test("./checker_linux", FileTest.EXISTS) == false) {
 		printf("[ERROR]: checker_linux non trouvée.\n");
 		return (1);
 	}
-	Posix.chmod("checker_linux", S_IRWXU);
+	FileUtils.chmod("checker_linux", 0755);
 
 	try {
-		argument_option(args);
+		yield argument_option(args);
 	} catch (Error e) {
 		printerr(e.message);
 		return -1;
