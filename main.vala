@@ -1,7 +1,9 @@
 using Posix;
 
-/* where is the push_swap default to "./push_swap" */
+private const string URL_CHECKER = "https://cdn.intra.42.fr/document/document/28256/checker_linux";
 public string? push_swap_emp = null;
+
+/* where is the push_swap default to "./push_swap" */
 Mode g_mode = ALL;
 
 /* mode of the tester */
@@ -249,46 +251,46 @@ public class Config {
 
 async int main(string []args)
 {
-	var config = new Config();
-	config.parse(args);
-
-
-	if (push_swap_emp == null) {
-		/* Search the good path of push_swap */
-		string []paths_push_swap = {"./push_swap", "../push_swap", "../push_swap/push_swap"};
-
-		printf("\033[96;1m[INFO] search ");
-		foreach (unowned var path in paths_push_swap) {
-			if (search_path(path) == true) {
-				push_swap_emp = path;
-				break ;
-			}
-		}
-		printf("\033[0m\n");
-	}
-	if (push_swap_emp == null ) {
-		printf("\033[96;1m[INFO] \033[0m ../push_swap not found \n");
-		return(-1);
-	}
-	if (FileUtils.test(push_swap_emp, FileTest.EXISTS) == false) 
-	{
-		printf("\033[31m[ERROR]: \033[91m%s non trouvée.\n", push_swap_emp);
-		return (1);
-	}
-	FileUtils.chmod(push_swap_emp, 0755);
-
-	/* Search the good path of push_swap */
-	if (FileUtils.test("./checker_linux", FileTest.EXISTS) == false) {
-		Posix.system("wget -c https://cdn.intra.42.fr/document/document/28256/checker_linux -q --show-progress");
-		printf("\n");
-	}
-	if (FileUtils.test("./checker_linux", FileTest.EXISTS) == false) {
-		printf("[ERROR]: checker_linux non trouvée.\n");
-		return (1);
-	}
-	FileUtils.chmod("checker_linux", 0755);
-
 	try {
+		var config = new Config();
+		config.parse(args);
+
+
+		if (push_swap_emp == null) {
+			/* Search the good path of push_swap */
+			string []paths_push_swap = {"./push_swap", "../push_swap", "../push_swap/push_swap"};
+
+			printf("\033[96;1m[INFO] search ");
+			foreach (unowned var path in paths_push_swap) {
+				if (search_path(path) == true) {
+					push_swap_emp = path;
+					break ;
+				}
+			}
+			printf("\033[0m\n");
+		}
+		if (push_swap_emp == null ) {
+			printf("\033[96;1m[INFO] \033[0m ../push_swap not found \n");
+			return(-1);
+		}
+		if (FileUtils.test(push_swap_emp, FileTest.EXISTS) == false) 
+		{
+			printf("\033[31m[ERROR]: \033[91m%s non trouvée.\n", push_swap_emp);
+			return (1);
+		}
+		FileUtils.chmod(push_swap_emp, 0755);
+
+		/* Search the good path of push_swap */
+		if (FileUtils.test("./checker_linux", FileTest.EXISTS) == false) {
+			Posix.system("wget -c " + URL_CHECKER + " -q --show-progress");
+			printf("\n");
+		}
+		if (FileUtils.test("./checker_linux", FileTest.EXISTS) == false) {
+			printf("[ERROR]: checker_linux non trouvée.\n");
+			return (1);
+		}
+		FileUtils.chmod("checker_linux", 0755);
+
 		yield argument_option(args);
 	} catch (Error e) {
 		printerr(e.message);
