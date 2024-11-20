@@ -50,7 +50,8 @@ class PushSwap {
 	private async void run_push_swap_exec () throws Error {
 		var bs = new StrvBuilder();
 		bs.add (push_swap_emp);
-		bs.addv (argv);
+		if (argv != null)
+			bs.addv (argv);
 		var proc = new Subprocess.newv (bs.end(), STDOUT_PIPE);
 		yield proc.communicate_utf8_async (null, null, out output, null);
 		count = yield count_me(output);
@@ -59,7 +60,8 @@ class PushSwap {
 	private async void run_checker () throws Error {
 		var bs = new StrvBuilder();
 		bs.add ("./checker_linux");
-		bs.addv (argv);
+		if (argv != null)
+			bs.addv (argv);
 		var proc = new Subprocess.newv (bs.end(), STDOUT_PIPE | STDIN_PIPE);
 		yield proc.communicate_utf8_async (output, null, out output_checker, null);
 		output_checker._delimit ("\n", '\0');
@@ -92,10 +94,14 @@ class PushSwap {
 			print("\033[6A");
 		}
 		double moyenne = moy_count / array.length;
-		double ecart_type = CalculateEcartType(moyenne);
-		print ("\033[35;1mMax: %s%d\n", color(max_count), max_count);
-		print ("\033[35;1mMin: %s%d\n", color(min_count), min_count);
-		print ("\033[34;1mAverage:\033[34;0m %s%g\n", color((int)moyenne), moyenne);
+		double ecart_type = CalculateEcartType (moyenne);
+		if (moyenne.is_nan ())
+			moyenne = 0;
+		if (ecart_type.is_nan ())
+			ecart_type = 0;
+		print ("\033[35;1mMax: %s%d\n", color (max_count), max_count);
+		print ("\033[35;1mMin: %s%d\n", color (min_count), min_count);
+		print ("\033[34;1mAverage:\033[34;0m %s%g\n", color ((int)moyenne), moyenne);
 		print("\033[34;1mstandard deviation:\033[34;0m %g\n", ecart_type);
 		print ("%s | %s\n", (nbr_ko == 0 ? "\033[32;1mKO 0" : @"\033[31;1mKO $nbr_ko"),
 			(nbr_err == 0 ? "\033[32;1mError 0" : "\033[31;1mError %d"));
@@ -179,7 +185,7 @@ class PushSwap {
 				yield;
 				continue;
 			}
-			job_max++;
+			++job_max;
 			PushSwap.run.begin(power, (obj, res) => {
 				try {
 					var p = PushSwap.run.end(res);
@@ -190,11 +196,11 @@ class PushSwap {
 					printerr("Error: %s\n", e.message);
 				}
 				++nbr_test;
-				job_max--;
+				--job_max;
 			});
 			--nbr;
 		}
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 6; ++i) {
 			print("\033[1A\033[2K");
 		}
 		if (error_text != "") {
