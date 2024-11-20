@@ -107,32 +107,29 @@ class PushSwap {
 		{
 			if (nb <= 700)
 				return GREEN;
-			else if (nb < 900)
+			if (nb < 900)
 				return BLUE;
-			else if (nb < 1100)
+			if (nb < 1100)
 				return YELLOW;
-			else if (nb < 1500)
+			if (nb < 1500)
 				return ORANGE;
-			else
-				return RED;
+			return RED;
 		}
 		else if (power <= 500)
 		{
 			if (nb < 5500)
 				return RED;
-			else if (nb < 7000)
+			if (nb < 7000)
 				return BLUE;
-			else if (nb < 8500)
+			if (nb < 8500)
 				return YELLOW;
-			else if (nb < 11500)
+			if (nb < 11500)
 				return ORANGE;
-			else
-				return RED;
+			return RED;
 		}
 		else
 			return WHITE;
 	}
-
 
 	private static double CalculateEcartType(double moyenne)
     {
