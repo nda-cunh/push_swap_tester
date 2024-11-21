@@ -225,5 +225,5 @@ async void calc_moy(string []args) throws Error {
 		return ;
 	}
 
-	yield PushSwap.exec_all_push_swap(nbr, power - 1);
+	yield PushSwap.exec_all_push_swap(nbr, power);
 }
