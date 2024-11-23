@@ -159,25 +159,17 @@ void test(string[] arg, bool compare) throws Error
 	}
 }
 
-/* change string[] to string */
+/* change string[] to string {"a", "b", "c"}  --> '"a" "b" "c"' */
 string tab_to_string(string[] tab)
 {
-	var str = new StringBuilder.sized(tab.length * 5);
-	foreach (var i in tab) {
-		str.append_c('\"');
-		str.append(i);
-		str.append("\" ");
-	}
-	return ((owned)str.str);
+	return "\"" + string.joinv("\" \"", tab) + "\"";
 }
 
 async void argument_option (string []args) throws Error {
 	/* ARGV main */
 	g_mode = ALL;
 	if (args.length > 1) {
-		if (args[1] == "help" || args[1] == "-h")
-			printf("\n[Help]\ntester_push_swap [true|false|leak|valgrind| puissance(int)] [iteration(int)] \n");
-		else if (args[1] == "leak" || args[1] == "valgrind")
+		if (args[1] == "leak" || args[1] == "valgrind")
 			g_mode = MEMORY_LEAK;
 		else if (args[1] == "true")
 			g_mode = TRUE;
