@@ -52,7 +52,7 @@ make
 you can run the visualizer with the command `./tester_push_swap --gui`
 it will download the visualizer and run it. (need gtk4 installed)
 
-<img src="https://gitlab.com/nda-cunh/visualizer-push-swap/-/blob/master/push_viz.gif">
+<img src="https://gitlab.com/nda-cunh/visualizer-push-swap/-/raw/master/push_viz.gif">
 
 # Note
 
