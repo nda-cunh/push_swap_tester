@@ -11,13 +11,13 @@ Vous pouvez aussi installer le visualizer de Stack A et B en 2D en bas de page.
 
 ### 1. Download the repo
 ```bash
-git clone https://gitlab.com/hydrasho/push_swap-testeur-max.git 
+git clone https://gitlab.com/nda-cunh/push_swap-testeur-max.git 
 ```
 
 ### 2. got to the repo cloned and compile the program
 
 ```bash
-make all
+make
 ```
 
 # Utilisation
@@ -34,7 +34,7 @@ make all
 
 ### MODE Moyenne/Maximum de coups
 
-<img src="img/arg2.png">
+<img src="img/arg2.gif">
 
 **options**\
 &nbsp; ***nb_element***  &nbsp;&nbsp;&nbsp;&nbsp; The number of element to sort\
@@ -46,6 +46,13 @@ make all
 `./tester_push_swap leak` ou `./tester_push_swap valgrind`
 
 <img src="img/leak.png">
+
+### MODE Visualiser 
+
+you can run the visualizer with the command `./tester_push_swap --gui`
+it will download the visualizer and run it. (need gtk4 installed)
+
+<img src="https://gitlab.com/nda-cunh/visualizer-push-swap/-/blob/master/push_viz.gif">
 
 # Note
 

@@ -35,6 +35,9 @@ class Config {
   %1$sex%2$s: tester_push_swap 500 1000
   	it will test 1000 push_swap with 500 numbers each 
 
+  %3$sVisualiser:%2$s
+  - gui : download and run the graphical visualiser
+
 %1$sExample:%2$s
 
 %4$s# Test the parsing%2$s
