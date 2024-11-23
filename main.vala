@@ -54,8 +54,10 @@ class Config {
 		context.parse(ref args);
 	}
 
+	public static bool visualiser = false;
 	private const GLib.OptionEntry[] options = {
 		{ "path", '\0', OptionFlags.NONE, OptionArg.STRING, ref push_swap_emp, "The Path of the push_swap executable", "push_swap" },
+		{ "gui", 'g', OptionFlags.NONE, OptionArg.NONE, ref visualiser, "download and run the graphical visualiser", "push_swap" },
 		{ null }
 	};
 }
@@ -63,7 +65,16 @@ class Config {
 async void argument_option (string []args) throws Error {
 	/* ARGV main */
 	g_mode = ALL;
-	if (args.length > 1) {
+	if (Config.visualiser == true) {
+		if (FileUtils.test("visualizer", FileTest.EXISTS) == false) {
+			Process.spawn_command_line_sync ("git clone git@gitlab.com:nda-cunh/visualizer-push-swap.git visualizer");
+		}
+		if (FileUtils.test("visualizer/visualizer", FileTest.EXISTS) == false) {
+			Process.spawn_sync ("./visualizer", {"./install.sh"}, null, 0, null);
+		}
+		Process.spawn_sync ("./visualizer", {"./visualizer", "--push_swap=../" + push_swap_emp}, null, 0, null);
+	}
+	else if (args.length > 1) {
 		if (args[1] == "leak" || args[1] == "valgrind")
 			g_mode = MEMORY_LEAK;
 		else if (args[1] == "true")

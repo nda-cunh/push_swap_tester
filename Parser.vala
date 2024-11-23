@@ -96,13 +96,13 @@ private int worker = 0;
 private int test_begin = 0;
 private int test_end = 0;
 
-public async void test(string[] argv, bool compare) throws Error
+public async void test(string[] argv_do_not_use, bool compare) throws Error
 {
 	string output;
 	string errput;
 
 	test_begin += 1;
-	var arg = argv.copy();
+	var arg = argv_do_not_use.copy();
 
 	// Block jobs if there are too many
 	while (worker >= 16) {
@@ -134,7 +134,7 @@ public async void test(string[] argv, bool compare) throws Error
 		if (malloc == free)
 			printf("\033[1;32m[MOK]:\033[1;92m %d malloc, %d free\033[0m\n", malloc, free);
 		else
-			printf("\033[1;31m[MKO]: %d malloc , %d free { %s}\033[0m\n", malloc, free, tab_to_string(argv));
+			printf("\033[1;31m[MKO]: %d malloc , %d free { %s}\033[0m\n", malloc, free, tab_to_string(arg));
 		worker -= 1;
 		test_end += 1;
 		return ;
@@ -152,7 +152,7 @@ public async void test(string[] argv, bool compare) throws Error
 		if (errput.has_prefix("Error\n") && output == "")
 			printf("\033[1;32mOK \033[0m");
 		else
-			printf("\033[1;31mKO [ %s] \033[0m", tab_to_string(argv));
+			printf("\033[1;31mKO [ %s] \033[0m", tab_to_string(arg));
 	}
 	/* Part for TRUE test*/
 	else if (compare == true && g_mode != FALSE){
@@ -177,9 +177,9 @@ public async void test(string[] argv, bool compare) throws Error
 		if (contents != null && "OK" in contents)
 			printf("\033[1;32mOK \033[0m");
 		else if (contents != null && "KO" in contents)
-			printf("\033[1;31mKO [ %s] \033[0m", tab_to_string(argv));
+			printf("\033[1;31mKO [ %s] \033[0m", tab_to_string(arg));
 		else
-			printf("\033[1;31mKO [ %s] \033[0m", tab_to_string(argv));
+			printf("\033[1;31mKO [ %s] \033[0m", tab_to_string(arg));
 	}
 	worker -= 1;
 	test_end += 1;
