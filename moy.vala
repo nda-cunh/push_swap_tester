@@ -52,7 +52,7 @@ class PushSwap {
 		bs.add (push_swap_emp);
 		if (argv != null)
 			bs.addv (argv);
-		var proc = new Subprocess.newv (bs.end(), STDOUT_PIPE);
+		var proc = new Subprocess.newv (bs.end(), STDOUT_PIPE | STDERR_MERGE);
 		yield proc.communicate_utf8_async (null, null, out output, null);
 		count = yield count_me(output);
 	}
@@ -62,7 +62,7 @@ class PushSwap {
 		bs.add ("./checker_linux");
 		if (argv != null)
 			bs.addv (argv);
-		var proc = new Subprocess.newv (bs.end(), STDOUT_PIPE | STDIN_PIPE);
+		var proc = new Subprocess.newv (bs.end(), STDOUT_PIPE | STDIN_PIPE | SubprocessFlags.STDERR_MERGE);
 		yield proc.communicate_utf8_async (output, null, out output_checker, null);
 		output_checker._delimit ("\n", '\0');
 	}
@@ -86,7 +86,7 @@ class PushSwap {
 				error_text += "Argv: [\"%s\"]\n\n".printf(string.joinv ("\" \"", new_push_swap.argv));
 				nbr_ko++;
 			}
-			if (new_push_swap.output_checker == "Error") {
+			if (new_push_swap.output_checker == "Error" || new_push_swap.output_checker == "Error\n") {
 				error_text += "Argv: [\"%s\"]\n\n".printf(string.joinv ("\" \"", new_push_swap.argv));
 				nbr_err++;
 			}
@@ -104,7 +104,7 @@ class PushSwap {
 		print ("\033[34;1mAverage:\033[34;0m %s%g\n", color ((int)moyenne), moyenne);
 		print("\033[34;1mstandard deviation:\033[34;0m %g\n", ecart_type);
 		print ("%s | %s\n", (nbr_ko == 0 ? "\033[32;1mKO 0" : @"\033[31;1mKO $nbr_ko"),
-			(nbr_err == 0 ? "\033[32;1mError 0" : "\033[31;1mError %d"));
+			(nbr_err == 0 ? "\033[32;1mError 0" : @"\033[31;1mError $nbr_err"));
 		print ("\033[33;1mTest %d / %d\033[0m\n", nbr_test, nbr_max);
 	}
 
