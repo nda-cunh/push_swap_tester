@@ -56,7 +56,7 @@ class Config {
 
 	public static bool visualiser = false;
 	private const GLib.OptionEntry[] options = {
-		{ "path", '\0', OptionFlags.NONE, OptionArg.STRING, ref push_swap_emp, "The Path of the push_swap executable", "push_swap" },
+		{ "path", 'p', OptionFlags.NONE, OptionArg.STRING, ref push_swap_emp, "The Path of the push_swap executable", "push_swap" },
 		{ "gui", 'g', OptionFlags.NONE, OptionArg.NONE, ref visualiser, "download and run the graphical visualiser", "push_swap" },
 		{ null }
 	};
