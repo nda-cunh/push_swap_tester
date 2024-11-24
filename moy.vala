@@ -109,7 +109,21 @@ class PushSwap {
 	}
 
 	private static unowned string color (int nb) {
-		if (power <= 100)
+		if (power <= 3)
+		{
+			if (nb <= 2)
+				return GREEN;
+			else
+				return RED;
+		}
+		else if (power <= 5)
+		{
+			if (nb <= 12)
+				return GREEN;
+			else
+				return RED;
+		}
+		else if (power <= 100)
 		{
 			if (nb <= 700)
 				return GREEN;
@@ -124,7 +138,7 @@ class PushSwap {
 		else if (power <= 500)
 		{
 			if (nb < 5500)
-				return RED;
+				return GREEN;
 			if (nb < 7000)
 				return BLUE;
 			if (nb < 8500)
