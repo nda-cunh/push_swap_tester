@@ -70,12 +70,13 @@ async void argument_option (string []args) throws Error {
 	g_mode = ALL;
 	if (Config.visualiser == true) {
 		if (FileUtils.test("visualizer", FileTest.EXISTS) == false) {
-			Process.spawn_command_line_sync ("git clone git@gitlab.com:nda-cunh/visualizer-push-swap.git visualizer");
+			Process.spawn_command_line_sync ("git clone https://gitlab.com/nda-cunh/visualizer-push-swap visualizer");
 		}
 		if (FileUtils.test("visualizer/visualizer", FileTest.EXISTS) == false) {
 			Process.spawn_sync ("./visualizer", {"./install.sh"}, null, 0, null);
 		}
 		Process.spawn_sync ("./visualizer", {"./visualizer", "--push_swap=../" + push_swap_emp}, null, 0, null);
+		return ;
 	}
 	else if (args.length > 1) {
 		if (args[1] == "leak" || args[1] == "valgrind")
