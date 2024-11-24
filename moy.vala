@@ -31,14 +31,26 @@ class PushSwap {
 	public int count;
 	string []argv;
 
-	PushSwap(int power) {
-		tab_input = ft_get_random_tab (power);
-		foreach (unowned var i in tab_input) {
-			argv += i.to_string();
-		}
-		count = 0;
+	public static async PushSwap run (int nbr) throws Error {
+		var self = new PushSwap ();
+		yield self.init_power (nbr);
+		yield self.run_push_swap_exec ();
+		yield self.run_checker ();
+		return self;
 	}
 
+	private async void init_power (int power) {
+		var t = new Thread<void>(null, ()=> {
+			tab_input = ft_get_random_tab (power);
+			foreach (unowned var i in tab_input) {
+				argv += i.to_string();
+			}
+			count = 0;
+			Idle.add (init_power.callback);
+		});
+		yield;
+		t.join();
+	}
 	private async int count_me (string output) {
 		int index = 0;
 		while ((index = output.index_of_char ('\n', index + 1)) != -1) {
@@ -65,14 +77,6 @@ class PushSwap {
 		var proc = new Subprocess.newv (bs.end(), STDOUT_PIPE | STDIN_PIPE | SubprocessFlags.STDERR_MERGE);
 		yield proc.communicate_utf8_async (output, null, out output_checker, null);
 		output_checker._delimit ("\n", '\0');
-	}
-
-	public static async PushSwap run (int nbr) throws Error {
-		var self = new PushSwap (nbr);
-		yield self.run_push_swap_exec ();
-		yield self.run_checker ();
-
-		return self;
 	}
 	
 	private static void draw_result (PushSwap? new_push_swap = null) {
@@ -190,12 +194,12 @@ class PushSwap {
 
 		while (job_max != 0 || nbr != 0) {
 			if (job_max == get_num_processors ()) {
-				Idle.add (exec_all_push_swap.callback, Priority.LOW);
+				Idle.add (exec_all_push_swap.callback);
 				yield;
 				continue;
 			}
 			if (nbr == 0) {
-				Idle.add (exec_all_push_swap.callback, Priority.LOW);
+				Idle.add (exec_all_push_swap.callback);
 				yield;
 				continue;
 			}
