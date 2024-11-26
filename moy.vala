@@ -260,8 +260,8 @@ async void calc_moy(string []args) throws Error {
     var power = args[1] != null ? int.parse(args[1]) : 10;
     var nbr = args.length > 2 ? int.parse(args[2]) : 10;
 
-	if (power >= 3000 || power <= 0) {
-		printerr("[Error]: Max of tester_pushwap is %d / 3000\n", power);
+	if (power > 10000 || power <= 0) {
+		printerr("[Error]: Max of tester_pushwap is %d / 10000\n", power);
 		return ;
 	}
 	
