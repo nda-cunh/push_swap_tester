@@ -28,14 +28,16 @@ class PushSwap {
 	public int[] tab_input;
 	public string output;
 	public string output_checker;
-	public int count;
+	public int count = 0;
 	string []argv;
+	public bool is_timeout = false;
 
 	public static async PushSwap run (int nbr) throws Error {
 		var self = new PushSwap ();
 		yield self.init_power (nbr);
 		yield self.run_push_swap_exec ();
-		yield self.run_checker ();
+		if (self.is_timeout == false)
+			yield self.run_checker ();
 		return self;
 	}
 
@@ -64,9 +66,20 @@ class PushSwap {
 		bs.add (push_swap_emp);
 		if (argv != null)
 			bs.addv (argv);
+
 		var proc = new Subprocess.newv (bs.end(), STDOUT_PIPE | STDERR_MERGE);
+		var source = Timeout.add (Config.timeout, ()=> {
+			proc.force_exit ();
+			is_timeout = true;
+			output = "Error\n";
+			count = 0;
+			return false;
+		});
 		yield proc.communicate_utf8_async (null, null, out output, null);
-		count = yield count_me(output);
+		if (is_timeout == false) {
+			count = yield count_me(output);
+			Source.remove (source);
+		}
 	}
 
 	private async void run_checker () throws Error {
@@ -79,37 +92,48 @@ class PushSwap {
 		output_checker._delimit ("\n", '\0');
 	}
 	
-	private static void draw_result (PushSwap? new_push_swap = null) {
-		if (new_push_swap != null)
-		{
-			if (max_count < new_push_swap.count)
-				max_count = new_push_swap.count;
-			if (min_count == 0 || min_count > new_push_swap.count)
-				min_count = new_push_swap.count;
-			if (new_push_swap.output_checker == "KO") {
-				error_text += "Argv: [\"%s\"]\n\n".printf(string.joinv ("\" \"", new_push_swap.argv));
-				nbr_ko++;
-			}
-			if (new_push_swap.output_checker == "Error" || new_push_swap.output_checker == "Error\n") {
-				error_text += "Argv: [\"%s\"]\n\n".printf(string.joinv ("\" \"", new_push_swap.argv));
-				nbr_err++;
-			}
-			moy_count += new_push_swap.count;
-			print("\033[6A");
-		}
+	private static void simple_print () {
 		double moyenne = moy_count / array.length;
 		double ecart_type = CalculateEcartType (moyenne);
 		if (moyenne.is_nan ())
 			moyenne = 0;
 		if (ecart_type.is_nan ())
 			ecart_type = 0;
-		print ("\033[35;1mMax: %s%d\n", color (max_count), max_count);
-		print ("\033[35;1mMin: %s%d\n", color (min_count), min_count);
-		print ("\033[34;1mAverage:\033[34;0m %s%g\n", color ((int)moyenne), moyenne);
-		print("\033[34;1mstandard deviation:\033[34;0m %g\n", ecart_type);
-		print ("%s | %s\n", (nbr_ko == 0 ? "\033[32;1mKO 0" : @"\033[31;1mKO $nbr_ko"),
-			(nbr_err == 0 ? "\033[32;1mError 0" : @"\033[31;1mError $nbr_err"));
-		print ("\033[33;1mTest %d / %d\033[0m\n", nbr_test, nbr_max);
+		print ("\033[2K\033[35;1mMax: %s%d\n", color (max_count), max_count);
+		print ("\033[2K\033[35;1mMin: %s%d\n", color (min_count), min_count);
+		print ("\033[2K\033[34;1mAverage:\033[34;0m %s%g\n", color ((int)moyenne), moyenne);
+		print("\033[2K\033[34;1mstandard deviation:\033[34;0m %g\n", ecart_type);
+		print ("\033[2K%s | %s | %s\n", (nbr_ko == 0 ? "\033[32;1mKO 0" : @"\033[31;1mKO $nbr_ko"),
+			(nbr_err == 0 ? "\033[32;1mError 0" : @"\033[31;1mError $nbr_err"),
+			(nbr_timeout == 0 ? "\033[32;1mTimeout 0" : @"\033[31;1mTimeout $nbr_timeout"));
+		print ("\033[2K\033[33;1mTest %d / %d\033[0m\n", nbr_test, nbr_max);
+	}
+
+	private static void draw_result (PushSwap? new_push_swap = null) {
+		if (new_push_swap != null)
+		{
+			if (new_push_swap.is_timeout == true) {
+				error_text += "Timeout: [\"%s\"]\n\n".printf(string.joinv ("\" \"", new_push_swap.argv));
+				nbr_timeout += 1;
+				moy_count += 10000;
+				return ;
+			}
+			if (max_count < new_push_swap.count)
+				max_count = new_push_swap.count;
+			if (min_count == 0 || min_count > new_push_swap.count)
+				min_count = new_push_swap.count;
+			if (new_push_swap.output_checker == "KO") {
+				error_text += "Ko : [\"%s\"]\n\n".printf(string.joinv ("\" \"", new_push_swap.argv));
+				nbr_ko++;
+			}
+			if (new_push_swap.output_checker == "Error" || new_push_swap.output_checker == "Error\n") {
+				error_text += "Error : [\"%s\"]\n\n".printf(string.joinv ("\" \"", new_push_swap.argv));
+				nbr_err++;
+			}
+			moy_count += new_push_swap.count;
+			print("\033[6A");
+		}
+		simple_print ();
 	}
 
 	private static unowned string color (int nb) {
@@ -176,6 +200,7 @@ class PushSwap {
 	public static int nbr_test;
 	public static int nbr_ko;
 	public static int nbr_err;
+	public static int nbr_timeout;
 	public static int power = 0;
 
 	public static async void exec_all_push_swap (int nbr, int power) throws Error {
@@ -183,11 +208,13 @@ class PushSwap {
 		int job_max = 0;
 		error_text = "";
 		max_count = 0;
+		min_count = 0;
 		moy_count = 0;
 		nbr_max = nbr;
 		nbr_test = 0;
 		nbr_ko = 0;
 		nbr_err = 0;
+		nbr_timeout = 0;
 
 		print ("\033[42m 5 \033[46m 4 \033[103m 3 \033[101m 2 \033[41m 1 \033[0m\n");
 		draw_result (null);

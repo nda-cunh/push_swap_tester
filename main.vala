@@ -11,7 +11,7 @@ enum Mode {
 	ALL, TRUE, FALSE, MEMORY_LEAK
 }
 
-class Config {
+public class Config {
 
 	public void parse(string[] args) throws Error {
 		var context = new GLib.OptionContext("[(true|false) | (leak|valgrind) | (puissance [iteration])]");
@@ -58,9 +58,11 @@ class Config {
 	}
 
 	public static bool visualiser = false;
+	public static int timeout = 3000;
 	private const GLib.OptionEntry[] options = {
 		{ "path", 'p', OptionFlags.NONE, OptionArg.STRING, ref push_swap_emp, "The Path of the push_swap executable", "push_swap" },
 		{ "gui", 'g', OptionFlags.NONE, OptionArg.NONE, ref visualiser, "download and run the graphical visualiser", "push_swap" },
+		{ "timeout", 't', OptionFlags.NONE, OptionArg.INT, ref timeout, "timeout of the tester (default 3000)", "ms" },
 		{ null }
 	};
 }
