@@ -27,6 +27,7 @@ private int[] ft_get_random_tab(int size)
 class PushSwap {
 	public int[] tab_input;
 	public string output;
+	public string errput;
 	public string output_checker;
 	public int count = 0;
 	string []argv;
@@ -67,15 +68,15 @@ class PushSwap {
 		if (argv != null)
 			bs.addv (argv);
 
-		var proc = new Subprocess.newv (bs.end(), STDOUT_PIPE | STDERR_MERGE);
+		var proc = new Subprocess.newv (bs.end(), STDOUT_PIPE | STDERR_PIPE);
 		var source = Timeout.add (Config.timeout, ()=> {
 			proc.force_exit ();
 			is_timeout = true;
-			output = "Error\n";
+			errput = "Error\n";
 			count = 0;
 			return false;
 		});
-		yield proc.communicate_utf8_async (null, null, out output, null);
+		yield proc.communicate_utf8_async (null, null, out output, out errput);
 		if (is_timeout == false) {
 			count = yield count_me(output);
 			Source.remove (source);
