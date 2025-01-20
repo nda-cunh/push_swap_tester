@@ -49,6 +49,7 @@ private async void list_test() throws Error
 	test.begin({"05 08 0009 00010 2"}, true);
 	test.begin({"05 5 005"}, false);
 	test.begin({"-00", "00"}, false);
+	test.begin({"-00", "+00"}, false);
 	test.begin({"052 02"}, true);
 	test.begin({"-0", "0"}, false);
 	test.begin({"0", "-0"}, false);
