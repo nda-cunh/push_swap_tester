@@ -54,7 +54,8 @@ class PushSwap {
 		yield;
 		t.join();
 	}
-	private async int count_me (string output) {
+
+	private int count_me (string output) {
 		int index = 0;
 		while ((index = output.index_of_char ('\n', index + 1)) != -1) {
 			++count;
@@ -78,7 +79,7 @@ class PushSwap {
 		});
 		yield proc.communicate_utf8_async (null, null, out output, out errput);
 		if (is_timeout == false) {
-			count = yield count_me(output);
+			count = count_me(output);
 			Source.remove (source);
 		}
 	}
