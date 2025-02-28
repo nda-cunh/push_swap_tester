@@ -11,6 +11,14 @@ private async void list_test() throws Error
 {
 	/* TRUE = GOOD  */
 	/* FALSE = ERROR */
+
+
+	test.begin({"3", "1", "\t0"}, true);
+	test.begin({"3", "1", "\n0"}, true);
+	test.begin({"3", "1", "\r0"}, true);
+	test.begin({"3", "1", "\v0"}, true);
+	test.begin({"3", "1", "\f0"}, true);
+	test.begin({"3", "1", "\f\r\n\t\v 0"}, true);
 	test.begin({"+000000001", "5", "3", "-5"}, true);
 	test.begin({"+ 000000001", "5", "3", "-5"}, false);
 	test.begin({"+52"}, true);
