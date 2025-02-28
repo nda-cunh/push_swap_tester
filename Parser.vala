@@ -139,6 +139,8 @@ private int worker = 0;
 private int test_begin = 0;
 private int test_end = 0;
 
+delegate void test_me(string str_test);
+
 public async void test(string[] argv_do_not_use, bool compare, Level level = MANDATORY) throws Error
 {
 	string output;
@@ -178,6 +180,31 @@ public async void test(string[] argv_do_not_use, bool compare, Level level = MAN
 			printf("\033[1;32m[MOK]:\033[1;92m %d malloc, %d free\033[0m\n", malloc, free);
 		else
 			printf("\033[1;31m[MKO]: %d malloc , %d free { %s}\033[0m\n", malloc, free, tab_to_string(arg));
+
+		StringBuilder errbuilder = new StringBuilder();
+
+		test_me func = ((s) => {
+			unowned string tmp;
+			tmp = errput;
+			do {
+				index = tmp.index_of(s, 4);
+				if (index != -1) {
+					tmp = tmp.offset(index);
+					errbuilder.append(tmp[0: tmp.index_of_char ('\n') + 1]);
+				}
+			} while (index != -1);
+		});
+
+		func("Conditional jump or move depends on uninitialised value");
+		func("Invalid read of size");
+		func("Invalid write of size");
+		func("Use of uninitialised value of size");
+
+		errbuilder.replace("\n", " ", 0);
+		if (errbuilder.len != 0)
+			printf("\033[1;31m[MKO]: [%s] free { %s}\033[0m\n", errbuilder.str, tab_to_string(arg));
+
+
 		worker -= 1;
 		test_end += 1;
 		return ;
